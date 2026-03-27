@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVSEC AI — Solicitar Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tarmac: #1a2332;
+    --deep: #0d1420;
+    --mid: #243041;
+    --accent: #0066cc;
+    --bright: #0088ff;
+    --red: #d42b2b;
+    --green: #1a8a4a;
+    --border: rgba(0,136,255,0.15);
+    --soft: rgba(255,255,255,0.38);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'DM Sans',sans-serif;background:var(--deep);color:#fff;min-height:100vh;cursor:none;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:repeating-linear-gradient(0deg,transparent 0,transparent 39px,rgba(0,136,255,.03) 39px,rgba(0,136,255,.03) 40px),
+    repeating-linear-gradient(90deg,transparent 0,transparent 79px,rgba(0,136,255,.025) 79px,rgba(0,136,255,.025) 80px);}
+
+  /* CURSOR */
+  .cur{position:fixed;width:10px;height:10px;background:var(--bright);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .15s,height .15s;}
+  .cur-ring{position:fixed;width:32px;height:32px;border:1.5px solid rgba(0,136,255,.55);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .2s,height .2s;}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 5vw;height:60px;background:rgba(13,20,32,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+  .nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.08em;color:#fff;text-decoration:none;}
+  .nav-logo span{color:var(--bright);}
+  .nav-badge{font-family:'Space Mono',monospace;font-size:.5rem;background:var(--accent);color:#fff;padding:2px 6px;border-radius:3px;letter-spacing:.1em;vertical-align:middle;margin-left:4px;}
+  .nav-back{font-size:.75rem;font-weight:500;color:var(--soft);text-decoration:none;letter-spacing:.05em;text-transform:uppercase;transition:color .2s;cursor:none;display:flex;align-items:center;gap:7px;}
+  .nav-back:hover{color:var(--bright);}
+
+  /* LAYOUT */
+  .page{position:relative;z-index:1;display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 60px);}
+
+  /* SIDEBAR */
+  .sidebar{padding:48px 32px;border-right:1px solid var(--border);background:rgba(255,255,255,.015);display:flex;flex-direction:column;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;}
+  .sb-eyebrow{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bright);display:flex;align-items:center;gap:8px;margin-bottom:22px;}
+  .pulse{width:6px;height:6px;background:var(--bright);border-radius:50%;flex-shrink:0;animation:p 1.8s ease infinite;}
+  @keyframes p{0%,100%{box-shadow:0 0 0 0 rgba(0,136,255,.5)}50%{box-shadow:0 0 0 7px rgba(0,136,255,0)}}
+  .sb-title{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:.92;letter-spacing:.02em;color:#fff;margin-bottom:18px;}
+  .sb-title span{color:var(--bright);}
+  .sb-desc{font-size:.87rem;color:var(--soft);line-height:1.7;margin-bottom:32px;}
+  .perks{display:flex;flex-direction:column;gap:10px;margin-bottom:32px;}
+  .perk{display:flex;align-items:flex-start;gap:11px;padding:12px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(0,136,255,.1);border-radius:8px;transition:border-color .2s;}
+  .perk:hover{border-color:rgba(0,136,255,.25);}
+  .perk-ico{font-size:1.05rem;flex-shrink:0;margin-top:1px;}
+  .perk strong{display:block;font-size:.82rem;font-weight:600;color:#fff;}
+  .perk span{font-size:.73rem;color:var(--soft);line-height:1.45;}
+  .trust{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:20px;}
+  .trust-chip{font-family:'Space Mono',monospace;font-size:.53rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.07);padding:5px 9px;border-radius:4px;}
+
+  /* FORM AREA */
+  .form-area{padding:48px 5vw 56px;display:flex;align-items:flex-start;justify-content:center;}
+  .form-box{width:100%;max-width:600px;}
+  .form-hl{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bright);margin-bottom:26px;}
+
+  /* FIELDS */
+  .row{display:grid;gap:14px;margin-bottom:14px;}
+  .c2{grid-template-columns:1fr 1fr;}
+  .c1{grid-template-columns:1fr;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  label{font-family:'Space Mono',monospace;font-size:.57rem;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.32);}
+  label .r{color:var(--bright);}
+  input,select,textarea{background:rgba(255,255,255,.05);border:1px solid rgba(0,136,255,.18);border-radius:7px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:.87rem;color:#fff;outline:none;width:100%;transition:border-color .2s,background .2s,box-shadow .2s;cursor:none;}
+  input::placeholder,textarea::placeholder{color:rgba(255,255,255,.16);}
+  input:focus,select:focus,textarea:focus{border-color:var(--bright);background:rgba(0,136,255,.07);box-shadow:0 0 0 3px rgba(0,136,255,.1);}
+  input.err,select.err{border-color:var(--red);}
+  select option{background:#1a2332;}
+  textarea{resize:vertical;min-height:76px;line-height:1.6;}
+  .ferr{font-size:.68rem;color:#f87171;display:none;}
+  .ferr.show{display:block;}
+
+  /* CHIPS — fixed */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{position:relative;}
+  .chip input[type="checkbox"]{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;}
+  .chip-lbl{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.04);border:1px solid rgba(0,136,255,.18);border-radius:7px;padding:8px 13px;font-family:'DM Sans',sans-serif;font-size:.81rem;font-weight:500;color:rgba(255,255,255,.48);cursor:pointer;user-select:none;transition:all .16s;white-space:nowrap;}
+  .chip input[type="checkbox"]:checked ~ .chip-lbl{background:rgba(0,136,255,.15);border-color:var(--bright);color:#fff;}
+  .chip-lbl:hover{border-color:rgba(0,136,255,.45);color:rgba(255,255,255,.82);}
+
+  /* DIVIDER */
+  .div{height:1px;background:rgba(0,136,255,.1);margin:20px 0;position:relative;}
+  .div::after{content:attr(data-t);position:absolute;top:50%;left:0;transform:translateY(-50%);background:var(--deep);padding-right:12px;font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.18);}
+
+  /* CONSENT */
+  .consent{display:flex;align-items:flex-start;gap:10px;margin:16px 0 4px;}
+  .consent input{width:15px;height:15px;flex-shrink:0;margin-top:2px;padding:0;accent-color:var(--bright);cursor:pointer;}
+  .consent label{font-family:'DM Sans',sans-serif;font-size:.79rem;letter-spacing:0;text-transform:none;color:rgba(255,255,255,.36);line-height:1.5;cursor:pointer;}
+  .consent label a{color:var(--bright);text-decoration:none;}
+
+  /* SUBMIT */
+  .btn-sub{width:100%;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:15px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;cursor:none;transition:all .22s;display:flex;align-items:center;justify-content:center;gap:9px;position:relative;margin-top:22px;}
+  .btn-sub:hover:not(:disabled){background:var(--bright);box-shadow:0 8px 28px rgba(0,136,255,.4);transform:translateY(-2px);}
+  .btn-sub:disabled{opacity:.5;}
+  .btn-sub .sp{display:none;width:17px;height:17px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;position:absolute;}
+  .btn-sub.loading .bt{opacity:0;}
+  .btn-sub.loading .sp{display:block;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* SUCCESS */
+  .suc{display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:56px 16px;min-height:460px;}
+  .suc.show{display:flex;}
+  .suc-ico{width:68px;height:68px;border-radius:50%;background:rgba(26,138,74,.15);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.9rem;margin-bottom:22px;animation:pop .5s cubic-bezier(.34,1.56,.64,1) both;}
+  @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+  .suc-title{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#fff;letter-spacing:.03em;margin-bottom:10px;}
+  .suc-sub{font-size:.93rem;color:var(--soft);line-height:1.7;max-width:340px;margin-bottom:24px;}
+  .suc-info{background:rgba(255,255,255,.04);border:1px solid rgba(0,136,255,.18);border-radius:8px;padding:13px 18px;font-family:'Space Mono',monospace;font-size:.64rem;letter-spacing:.08em;color:rgba(255,255,255,.32);text-align:left;width:100%;max-width:360px;margin-bottom:22px;}
+  .suc-info div{margin-bottom:4px;}
+  .suc-info div:last-child{margin-bottom:0;}
+  .suc-info .lbl{color:var(--bright);margin-right:7px;}
+  .btn-ret{display:inline-block;padding:10px 24px;background:transparent;border:1px solid rgba(255,255,255,.12);border-radius:7px;font-size:.78rem;color:rgba(255,255,255,.4);text-decoration:none;cursor:none;transition:all .2s;}
+  .btn-ret:hover{border-color:rgba(0,136,255,.4);color:var(--bright);}
+
+  /* RESPONSIVE */
+  @media(max-width:860px){
+    .page{grid-template-columns:1fr;}
+    .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);padding:32px 5vw 24px;}
+    .perks,.trust{display:none;}
+    .sb-title{font-size:2.1rem;}
+    .form-area{padding:32px 5vw 48px;}
+  }
+  @media(max-width:520px){.c2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="cur" id="cur"></div>
+<div class="cur-ring" id="cring"></div>
+
+<nav>
+  <a href="index.html" class="nav-logo">AVSEC<span>AI</span><span class="nav-badge">v3.0</span></a>
+  <a href="index.html" class="nav-back">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2.5L3.5 6.5 8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span id="navTxt">Volver al inicio</span>
+  </a>
+</nav>
+
+<div class="page">
+
+  <aside class="sidebar">
+    <div class="sb-eyebrow"><span class="pulse"></span><span id="sbEye">Demo disponible</span></div>
+    <h1 class="sb-title" id="sbTitle">Tu demo<br><span>personal</span><br>te espera</h1>
+    <p class="sb-desc" id="sbDesc">Completa el formulario y un especialista te contactará dentro de 24 horas para coordinar tu sesión en vivo.</p>
+    <div class="perks">
+      <div class="perk"><span class="perk-ico">🎯</span><div><strong id="ph1">Demo personalizada</strong><span id="pd1">45 min con un especialista mostrando tu flujo exacto.</span></div></div>
+      <div class="perk"><span class="perk-ico">⚡</span><div><strong id="ph2">Respuesta en 24h</strong><span id="pd2">Confirmación por correo con los detalles de tu sesión.</span></div></div>
+      <div class="perk"><span class="perk-ico">🔒</span><div><strong id="ph3">Sin compromisos</strong><span id="pd3">Gratis. Tus datos son confidenciales.</span></div></div>
+    </div>
+    <div class="trust">
+      <span class="trust-chip">OACI Anexo 17</span>
+      <span class="trust-chip">DGAC Costa Rica</span>
+      <span class="trust-chip">SJO · MROC</span>
+    </div>
+  </aside>
+
+  <div class="form-area">
+    <div class="form-box">
+      <p class="form-hl" id="formHL">// Solicitar demo personalizada</p>
+
+      <form id="theForm" novalidate>
+
+        <div class="row c2">
+          <div class="field">
+            <label><span id="lNom">Nombre</span> <span class="r">*</span></label>
+            <input type="text" id="nombre" autocomplete="given-name">
+            <span class="ferr" id="eNom">Requerido</span>
+          </div>
+          <div class="field">
+            <label><span id="lApe">Apellido</span> <span class="r">*</span></label>
+            <input type="text" id="apellido" autocomplete="family-name">
+            <span class="ferr" id="eApe">Requerido</span>
+          </div>
+        </div>
+
+        <div class="row c1">
+          <div class="field">
+            <label><span id="lEmail">Correo electrónico</span> <span class="r">*</span></label>
+            <input type="email" id="email" autocomplete="email">
+            <span class="ferr" id="eEmail">Correo inválido</span>
+          </div>
+        </div>
+
+        <div class="row c2">
+          <div class="field">
+            <label id="lTel">Teléfono / WhatsApp</label>
+            <input type="tel" id="tel" placeholder="+506 8888-8888" autocomplete="tel">
+          </div>
+          <div class="field">
+            <label><span id="lPais">País</span> <span class="r">*</span></label>
+            <select id="pais">
+              <option value="" disabled selected id="paisPh">Seleccionar</option>
+              <option>Costa Rica</option><option>Guatemala</option><option>El Salvador</option>
+              <option>Honduras</option><option>Nicaragua</option><option>Panamá</option>
+              <option>República Dominicana</option><option>Colombia</option>
+              <option>México</option><option>Estados Unidos</option><option>Otro</option>
+            </select>
+            <span class="ferr" id="ePais">Requerido</span>
+          </div>
+        </div>
+
+        <div class="row c2">
+          <div class="field">
+            <label><span id="lEmp">Empresa</span> <span class="r">*</span></label>
+            <input type="text" id="empresa">
+            <span class="ferr" id="eEmp">Requerido</span>
+          </div>
+          <div class="field">
+            <label><span id="lRol">Tu rol</span> <span class="r">*</span></label>
+            <select id="rol">
+              <option value="" disabled selected id="rolPh">Seleccionar</option>
+              <option id="r1">Jefe de Seguridad</option>
+              <option id="r2">Gerente de Operaciones</option>
+              <option id="r3">Director de Aviación</option>
+              <option id="r4">Supervisor AVSEC</option>
+              <option id="r5">Oficial de Seguridad</option>
+              <option id="r6">TI / Sistemas</option>
+              <option id="r7">Consultor Externo</option>
+              <option id="r8">Otro</option>
+            </select>
+            <span class="ferr" id="eRol">Requerido</span>
+          </div>
+        </div>
+
+        <div class="row c2">
+          <div class="field">
+            <label id="lIata">Aeropuerto (IATA)</label>
+            <input type="text" id="iata" placeholder="SJO, GUA…" maxlength="4" style="text-transform:uppercase">
+          </div>
+          <div class="field">
+            <label id="lOf">N° de oficiales</label>
+            <select id="oficiales">
+              <option value="" disabled selected id="ofPh">Seleccionar</option>
+              <option id="of1">1–5</option><option id="of2">6–15</option>
+              <option id="of3">16–50</option><option id="of4">50+</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="div" id="divMod" data-t="Módulos de interés"></div>
+
+        <div class="field" style="margin-bottom:14px">
+          <label><span id="lMod">Módulos de interés</span> <span class="r">*</span></label>
+          <div class="chips">
+            <span class="chip"><input type="checkbox" id="m1" name="mod" value="Inspección de Aeronave"><label class="chip-lbl" for="m1">✈️ <span id="mt1">Inspección</span></label></span>
+            <span class="chip"><input type="checkbox" id="m2" name="mod" value="Control de Accesos"><label class="chip-lbl" for="m2">📛 <span id="mt2">Accesos</span></label></span>
+            <span class="chip"><input type="checkbox" id="m3" name="mod" value="Operación de Rampa"><label class="chip-lbl" for="m3">📦 <span id="mt3">Rampa</span></label></span>
+            <span class="chip"><input type="checkbox" id="m4" name="mod" value="Panel de Admin"><label class="chip-lbl" for="m4">📊 <span id="mt4">Admin Panel</span></label></span>
+            <span class="chip"><input type="checkbox" id="m5" name="mod" value="Todos"><label class="chip-lbl" for="m5">⚡ <span id="mt5">Todos</span></label></span>
+          </div>
+          <span class="ferr" id="eMod">Selecciona al menos uno</span>
+        </div>
+
+        <div class="div" id="divDemo" data-t="Tu demo"></div>
+
+        <div class="row c2">
+          <div class="field">
+            <label id="lDisp">Disponibilidad</label>
+            <select id="disp">
+              <option value="" disabled selected id="dPh">¿Cuándo?</option>
+              <option id="d1">Esta semana</option><option id="d2">Próxima semana</option>
+              <option id="d3">En 2 semanas</option><option id="d4">Este mes</option>
+              <option id="d5">Sin preferencia</option>
+            </select>
+          </div>
+          <div class="field">
+            <label id="lFmt">Formato</label>
+            <select id="formato">
+              <option value="" disabled selected id="fPh">Seleccionar</option>
+              <option id="f1">Videollamada (Zoom/Teams)</option>
+              <option id="f2">Presencial</option>
+              <option id="f3">Solo video grabado</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row c1">
+          <div class="field">
+            <label id="lMsg">Mensaje (opcional)</label>
+            <textarea id="mensaje" id="msg" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="consent">
+          <input type="checkbox" id="term">
+          <label for="term" id="lTerm">Acepto que AVSEC AI use mis datos para coordinar la demo. <a href="#">Privacidad</a></label>
+        </div>
+        <span class="ferr" id="eTerm" style="margin-left:25px">Requerido</span>
+
+        <button type="button" class="btn-sub" id="btnSub" onclick="send()">
+          <span class="bt" id="btnTxt">🚀 Solicitar Demo</span>
+          <div class="sp"></div>
+        </button>
+
+      </form>
+
+      <!-- SUCCESS -->
+      <div class="suc" id="suc">
+        <div class="suc-ico">✅</div>
+        <div class="suc-title" id="sucT">¡Demo solicitada!</div>
+        <p class="suc-sub" id="sucS">Recibimos tu solicitud. Un especialista te contactará en menos de 24 horas.</p>
+        <div class="suc-info">
+          <div><span class="lbl">PARA</span><span id="sucEmail"></span></div>
+          <div><span class="lbl">ESTADO</span><span style="color:#4ade80">✓ <span id="sucSent">Enviado</span></span></div>
+        </div>
+        <a href="index.html" class="btn-ret" id="sucBtn">← Volver al inicio</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CURSOR
+const cur=document.getElementById('cur'),cr=document.getElementById('cring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function a(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.14;ry+=(my-ry)*.14;cr.style.left=rx+'px';cr.style.top=ry+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button,input,select,textarea,label').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cur.style.width='18px';cur.style.height='18px';cr.style.width='46px';cr.style.height='46px';});
+  el.addEventListener('mouseleave',()=>{cur.style.width='10px';cur.style.height='10px';cr.style.width='32px';cr.style.height='32px';});
+});
+
+// ── LANGUAGE DETECTION
+const p=new URLSearchParams(window.location.search);
+let L=p.get('lang')||localStorage.getItem('avsec_lang')||'es';
+if(L!=='es'&&L!=='en') L='es';
+
+const T={
+  es:{
+    navTxt:'Volver al inicio', sbEye:'Demo disponible',
+    sbTitle:'Tu demo<br><span>personal</span><br>te espera',
+    sbDesc:'Completa el formulario y un especialista te contactará dentro de 24 horas para coordinar tu sesión en vivo.',
+    ph1:'Demo personalizada',pd1:'45 min con un especialista mostrando tu flujo exacto.',
+    ph2:'Respuesta en 24h',pd2:'Confirmación por correo con los detalles de tu sesión.',
+    ph3:'Sin compromisos',pd3:'Gratis. Tus datos son confidenciales.',
+    hl:'// Solicitar demo personalizada',
+    lNom:'Nombre',lApe:'Apellido',lEmail:'Correo electrónico',
+    lTel:'Teléfono / WhatsApp',lPais:'País',lEmp:'Empresa',lRol:'Tu rol',
+    lIata:'Aeropuerto (IATA)',lOf:'N° de oficiales',
+    lMod:'Módulos de interés',lDisp:'Disponibilidad',lFmt:'Formato',lMsg:'Mensaje (opcional)',
+    lTerm:'Acepto que AVSEC AI use mis datos para coordinar la demo. <a href="#">Privacidad</a>',
+    paisPh:'Seleccionar',rolPh:'Seleccionar',
+    r1:'Jefe de Seguridad',r2:'Gerente de Operaciones',r3:'Director de Aviación',
+    r4:'Supervisor AVSEC',r5:'Oficial de Seguridad',r6:'TI / Sistemas',r7:'Consultor Externo',r8:'Otro',
+    ofPh:'Seleccionar',of1:'1–5',of2:'6–15',of3:'16–50',of4:'50+',
+    dPh:'¿Cuándo?',d1:'Esta semana',d2:'Próxima semana',d3:'En 2 semanas',d4:'Este mes',d5:'Sin preferencia',
+    fPh:'Seleccionar',f1:'Videollamada (Zoom/Teams)',f2:'Presencial',f3:'Solo video grabado',
+    divMod:'Módulos de interés',divDemo:'Tu demo',
+    mt1:'Inspección',mt2:'Accesos',mt3:'Rampa',mt4:'Admin Panel',mt5:'Todos',
+    btnTxt:'🚀 Solicitar Demo',msgPh:'Cuéntanos sobre tu operación o preguntas específicas…',
+    eReq:'Requerido',eEmail:'Correo inválido',eMod:'Selecciona al menos uno',eTerm:'Requerido',
+    sucT:'¡Demo solicitada!',sucS:'Recibimos tu solicitud. Un especialista te contactará en menos de 24 horas.',
+    sucSent:'Enviado',sucBtn:'← Volver al inicio',docTitle:'AVSEC AI — Solicitar Demo'
+  },
+  en:{
+    navTxt:'Back to home', sbEye:'Demo available now',
+    sbTitle:'Your personal<br><span>demo</span><br>awaits',
+    sbDesc:'Fill out the form and a specialist will contact you within 24 hours to schedule your live session.',
+    ph1:'Personalized demo',pd1:'45 min with a specialist showing your exact workflow.',
+    ph2:'Response within 24h',pd2:'Email confirmation with your session details.',
+    ph3:'No commitment',pd3:'Free. Your data is confidential.',
+    hl:'// Request personalized demo',
+    lNom:'First name',lApe:'Last name',lEmail:'Email address',
+    lTel:'Phone / WhatsApp',lPais:'Country',lEmp:'Company',lRol:'Your role',
+    lIata:'Airport (IATA code)',lOf:'Number of officers',
+    lMod:'Modules of interest',lDisp:'Availability',lFmt:'Format',lMsg:'Message (optional)',
+    lTerm:'I agree that AVSEC AI may use my data to coordinate the demo. <a href="#">Privacy</a>',
+    paisPh:'Select',rolPh:'Select',
+    r1:'Security Chief',r2:'Operations Manager',r3:'Aviation Director',
+    r4:'AVSEC Supervisor',r5:'Security Officer',r6:'IT / Systems',r7:'External Consultant',r8:'Other',
+    ofPh:'Select',of1:'1–5',of2:'6–15',of3:'16–50',of4:'50+',
+    dPh:'When?',d1:'This week',d2:'Next week',d3:'In 2 weeks',d4:'This month',d5:'No preference',
+    fPh:'Select',f1:'Video call (Zoom/Teams)',f2:'In-person',f3:'Recorded video only',
+    divMod:'Modules of interest',divDemo:'Your demo',
+    mt1:'Aircraft Inspection',mt2:'Access Control',mt3:'Ramp Ops',mt4:'Admin Panel',mt5:'All',
+    btnTxt:'🚀 Request Demo',msgPh:'Tell us about your operation or any specific questions…',
+    eReq:'Required',eEmail:'Invalid email',eMod:'Select at least one',eTerm:'Required',
+    sucT:'Demo requested!',sucS:'We received your request. A specialist will contact you within 24 hours.',
+    sucSent:'Sent',sucBtn:'← Back to home',docTitle:'AVSEC AI — Request Demo'
+  }
+};
+
+function applyL(l){
+  const t=T[l];
+  document.documentElement.lang=l;
+  document.title=t.docTitle;
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.innerHTML=v;};
+  const st=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  s('navTxt',t.navTxt);s('sbEye',t.sbEye);s('sbTitle',t.sbTitle);s('sbDesc',t.sbDesc);
+  s('ph1',t.ph1);s('pd1',t.pd1);s('ph2',t.ph2);s('pd2',t.pd2);s('ph3',t.ph3);s('pd3',t.pd3);
+  s('formHL',t.hl);
+  s('lNom',t.lNom);s('lApe',t.lApe);s('lEmail',t.lEmail);s('lTel',t.lTel);s('lPais',t.lPais);
+  s('lEmp',t.lEmp);s('lRol',t.lRol);s('lIata',t.lIata);s('lOf',t.lOf);
+  s('lMod',t.lMod);s('lDisp',t.lDisp);s('lFmt',t.lFmt);s('lMsg',t.lMsg);
+  s('lTerm',t.lTerm);
+  s('paisPh',t.paisPh);s('rolPh',t.rolPh);s('ofPh',t.ofPh);s('dPh',t.dPh);s('fPh',t.fPh);
+  ['r1','r2','r3','r4','r5','r6','r7','r8'].forEach(id=>st(id,t[id]));
+  ['of1','of2','of3','of4'].forEach(id=>st(id,t[id]));
+  ['d1','d2','d3','d4','d5'].forEach(id=>st(id,t[id]));
+  ['f1','f2','f3'].forEach(id=>st(id,t[id]));
+  document.getElementById('divMod').setAttribute('data-t',t.divMod);
+  document.getElementById('divDemo').setAttribute('data-t',t.divDemo);
+  ['mt1','mt2','mt3','mt4','mt5'].forEach(id=>st(id,t[id]));
+  document.getElementById('mensaje').placeholder=t.msgPh;
+  s('btnTxt',t.btnTxt);
+  // errors
+  ['eNom','eApe','ePais','eEmp','eRol'].forEach(id=>st(id,t.eReq));
+  st('eEmail',t.eEmail);st('eMod',t.eMod);st('eTerm',t.eTerm);
+  // success
+  st('sucT',t.sucT);st('sucS',t.sucS);st('sucSent',t.sucSent);s('sucBtn',t.sucBtn);
+}
+applyL(L);
+
+// ── VALIDATION HELPERS
+function req(id,eid){const e=document.getElementById(id),er=document.getElementById(eid);if(!e.value.trim()){e.classList.add('err');er.classList.add('show');return false;}e.classList.remove('err');er.classList.remove('show');return true;}
+function okEmail(id,eid){const e=document.getElementById(id),er=document.getElementById(eid);if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.value)){e.classList.add('err');er.classList.add('show');return false;}e.classList.remove('err');er.classList.remove('show');return true;}
+['nombre','apellido','email','pais','empresa','rol'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el)el.addEventListener('change',()=>{el.classList.remove('err');});
+});
+
+// ── SUBMIT
+async function send(){
+  let ok=true;
+  ok=req('nombre','eNom')&&ok;
+  ok=req('apellido','eApe')&&ok;
+  ok=okEmail('email','eEmail')&&ok;
+  ok=req('pais','ePais')&&ok;
+  ok=req('empresa','eEmp')&&ok;
+  ok=req('rol','eRol')&&ok;
+  const mods=[...document.querySelectorAll('input[name="mod"]:checked')].map(e=>e.value);
+  const em=document.getElementById('eMod');
+  if(!mods.length){em.classList.add('show');ok=false;}else{em.classList.remove('show');}
+  const tc=document.getElementById('term'),et=document.getElementById('eTerm');
+  if(!tc.checked){et.classList.add('show');ok=false;}else{et.classList.remove('show');}
+  if(!ok){document.querySelector('.err,.ferr.show')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
+
+  const btn=document.getElementById('btnSub');
+  btn.classList.add('loading');btn.disabled=true;
+
+  const data={
+    nombre:document.getElementById('nombre').value.trim(),
+    apellido:document.getElementById('apellido').value.trim(),
+    email:document.getElementById('email').value.trim(),
+    telefono:document.getElementById('tel').value.trim(),
+    pais:document.getElementById('pais').value,
+    empresa:document.getElementById('empresa').value.trim(),
+    rol:document.getElementById('rol').value,
+    iata:document.getElementById('iata').value.trim().toUpperCase(),
+    modulos:mods.join(', '),
+    oficiales:document.getElementById('oficiales').value,
+    disponibilidad:document.getElementById('disp').value,
+    formato:document.getElementById('formato').value,
+    mensaje:document.getElementById('mensaje').value.trim(),
+    lang:L,
+    timestamp:new Date().toLocaleString('es-CR',{timeZone:'America/Costa_Rica'})
+  };
+
+  // ── Replace with your deployed Apps Script Web App URL
+  const URL='https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
+  try{await fetch(URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}
+
+  await new Promise(r=>setTimeout(r,1100));
+  document.getElementById('theForm').style.display='none';
+  document.getElementById('formHL').style.display='none';
+  document.getElementById('sucEmail').textContent=data.email;
+  document.getElementById('suc').classList.add('show');
+  btn.classList.remove('loading');btn.disabled=false;
+}
+
+// ── LANDING LANGUAGE LINK HELPER
+// In your landing page, link to book.html like this:
+// <a href="book.html?lang=en">Request Demo</a>  (English)
+// <a href="book.html?lang=es">Solicitar Demo</a>  (Spanish)
+</script>
+</body>
+</html>
