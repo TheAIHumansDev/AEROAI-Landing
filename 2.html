@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="AVSEC APP — Plataforma IA de Seguridad Aeropuertaria" />
+<meta property="og:description" content="Digitaliza, audita y protege cada operación en tierra. Desde la inspección de aeronave hasta el control de accesos — todo registrado, verificado y reportado en tiempo real." />
+<meta property="og:image" content="https://aeroaiops.com/1.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="AVSEC APP — Sistema de Seguridad Aeropuertaria con IA" />
+<meta property="og:url" content="https://aeroaiops.com" />
+<meta property="og:site_name" content="AVSEC APP" />
+<meta property="og:locale" content="es_CR" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="AVSEC APP — Plataforma IA de Seguridad Aeropuertaria" />
+<meta name="twitter:description" content="Inspección. Accesos. Rampa. Todo auditado, firmado y reportado en tiempo real. OACI Anexo 17 · DGAC Costa Rica." />
+<meta name="twitter:image" content="https://tudominio.com/og-image.png" />
+<meta name="twitter:image:alt" content="AVSEC PRO — Sistema de Seguridad Aeropuertaria con IA" />
+  
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #e8f4fd;
+    --sky-mid: #c9e8f7;
+    --tarmac: #1a2332;
+    --tarmac-mid: #243041;
+    --accent: #0066cc;
+    --accent-bright: #0088ff;
+    --accent-glow: rgba(0,136,255,0.18);
+    --gold: #e8a020;
+    --gold-light: #f5c048;
+    --red-alert: #d42b2b;
+    --green-clear: #1a8a4a;
+    --text-dark: #0d1825;
+    --text-mid: #2c4a6e;
+    --text-soft: #5a7fa8;
+    --white: #ffffff;
+    --surface: rgba(255,255,255,0.92);
+    --border: rgba(0,102,204,0.15);
+    --runway-line: rgba(0,102,204,0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sky);
+    color: var(--text-dark);
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* LANGUAGE TRANSITION */
+  [data-es], [data-en] { transition: opacity 0.25s ease; }
+
+  /* CUSTOM CURSOR */
+  .cursor {
+    position: fixed; width: 12px; height: 12px;
+    background: var(--accent); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: multiply;
+  }
+  .cursor-ring {
+    position: fixed; width: 36px; height: 36px;
+    border: 1.5px solid var(--accent); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: transform 0.18s ease, width 0.25s, height 0.25s, border-color 0.2s;
+    opacity: 0.7;
+  }
+  body:hover .cursor { width: 14px; height: 14px; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5vw;
+    height: 68px;
+    background: rgba(232,244,253,0.85);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    transition: box-shadow 0.3s, background 0.3s;
+  }
+  nav.scrolled {
+    box-shadow: 0 4px 32px rgba(0,102,204,0.09);
+    background: rgba(255,255,255,0.95);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.7rem;
+    letter-spacing: 0.08em; color: var(--tarmac);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-badge {
+    font-family: 'Space Mono', monospace; font-size: 0.55rem;
+    background: var(--accent); color: white; padding: 2px 7px;
+    border-radius: 3px; letter-spacing: 0.1em;
+    vertical-align: middle; margin-left: 2px;
+  }
+  .nav-links { display: flex; gap: 2.2rem; list-style: none; }
+  .nav-links a {
+    font-size: 0.82rem; font-weight: 500; letter-spacing: 0.05em;
+    color: var(--text-mid); text-decoration: none;
+    text-transform: uppercase; transition: color 0.2s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; left: 0; bottom: -3px;
+    width: 0; height: 1.5px; background: var(--accent);
+    transition: width 0.25s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* NAV RIGHT CLUSTER */
+  .nav-right {
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  /* LANGUAGE TOGGLE BUTTON */
+  .lang-toggle {
+    display: flex; align-items: center; gap: 0;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: none;
+    box-shadow: 0 2px 10px rgba(0,102,204,0.08);
+    transition: box-shadow 0.2s;
+    height: 36px;
+    flex-shrink: 0;
+  }
+  .lang-toggle:hover {
+    box-shadow: 0 4px 16px rgba(0,102,204,0.15);
+  }
+  .lang-btn {
+    padding: 0 14px;
+    height: 100%;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    color: var(--text-soft);
+    background: transparent;
+    border: none;
+    cursor: none;
+    transition: all 0.22s;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .lang-btn.active {
+    background: var(--accent);
+    color: white;
+  }
+  .lang-btn:not(.active):hover {
+    color: var(--accent);
+    background: rgba(0,102,204,0.05);
+  }
+  .lang-divider {
+    width: 1px;
+    height: 60%;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .nav-cta {
+    background: var(--tarmac); color: white;
+    padding: 10px 22px; border-radius: 6px;
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; text-decoration: none;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    border: none; cursor: none;
+    white-space: nowrap;
+  }
+  .nav-cta:hover {
+    background: var(--accent);
+    box-shadow: 0 6px 20px rgba(0,102,204,0.3);
+    transform: translateY(-1px);
+  }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 120px 5vw 80px;
+    background: linear-gradient(165deg, #e8f4fd 0%, #d0e8f5 40%, #b8daf0 100%);
+  }
+
+  .runway-bg {
+    position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+  }
+  .runway-line {
+    position: absolute; background: var(--runway-line);
+    animation: runwayPulse 3s ease-in-out infinite;
+  }
+  .rl-h { height: 1px; width: 100%; }
+  .rl-v { width: 1px; height: 100%; }
+
+  @keyframes runwayPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+
+  .hero-aircraft {
+    position: absolute; right: -5%; top: 50%;
+    transform: translateY(-50%);
+    width: 58vw; max-width: 820px;
+    opacity: 0.07;
+    animation: aircraftDrift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes aircraftDrift {
+    0% { transform: translateY(-50%) translateX(0) rotate(-1deg); }
+    100% { transform: translateY(-52%) translateX(-2%) rotate(0.5deg); }
+  }
+
+  .hero-content {
+    position: relative; z-index: 2; max-width: 760px;
+    text-align: left;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'Space Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 0.18em; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 28px;
+    background: rgba(0,102,204,0.08); border: 1px solid rgba(0,102,204,0.2);
+    padding: 7px 14px; border-radius: 4px;
+    animation: fadeUp 0.9s ease both;
+  }
+  .pulse-dot {
+    width: 7px; height: 7px; background: var(--accent); border-radius: 50%;
+    animation: pulseDot 1.8s ease infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,102,204,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(0,102,204,0); }
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.2rem, 8vw, 7rem);
+    line-height: 0.95; letter-spacing: 0.02em;
+    color: var(--tarmac);
+    margin-bottom: 24px;
+    animation: fadeUp 0.9s 0.15s ease both;
+  }
+  .hero-title .accent { color: var(--accent); }
+  .hero-title .line2 { display: block; color: var(--accent-bright); }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 1.8vw, 1.22rem); font-weight: 300;
+    color: var(--text-mid); line-height: 1.7; max-width: 560px;
+    margin-bottom: 40px;
+    animation: fadeUp 0.9s 0.28s ease both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    animation: fadeUp 0.9s 0.4s ease both;
+  }
+  .btn-primary {
+    background: var(--tarmac); color: white;
+    padding: 16px 36px; border-radius: 8px;
+    font-size: 0.88rem; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; text-decoration: none;
+    transition: all 0.25s; display: inline-flex; align-items: center; gap: 10px;
+    cursor: none;
+  }
+  .btn-primary:hover {
+    background: var(--accent);
+    box-shadow: 0 10px 36px rgba(0,102,204,0.35);
+    transform: translateY(-2px);
+  }
+  .btn-secondary {
+    background: transparent; color: var(--tarmac);
+    padding: 16px 32px; border-radius: 8px;
+    font-size: 0.88rem; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; text-decoration: none;
+    border: 1.5px solid rgba(26,35,50,0.25);
+    transition: all 0.25s; cursor: none;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent); color: var(--accent);
+    background: rgba(0,102,204,0.05);
+    transform: translateY(-2px);
+  }
+
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0; max-width: 560px; margin-top: 60px;
+    border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; background: var(--surface);
+    backdrop-filter: blur(10px);
+    animation: fadeUp 0.9s 0.55s ease both;
+    box-shadow: 0 8px 36px rgba(0,102,204,0.09);
+  }
+  .stat-item {
+    padding: 22px 24px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem;
+    color: var(--accent); letter-spacing: 0.05em;
+    display: block; line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.7rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--text-soft);
+    margin-top: 4px; display: block;
+  }
+
+  .scroll-indicator {
+    position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    animation: fadeUp 1s 1s ease both;
+  }
+  .scroll-text {
+    font-family: 'Space Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.2em; color: var(--text-soft); text-transform: uppercase;
+  }
+  .scroll-arrow {
+    width: 22px; height: 22px; border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent); transform: rotate(45deg);
+    animation: scrollBounce 1.6s ease infinite;
+  }
+  @keyframes scrollBounce {
+    0%, 100% { transform: rotate(45deg) translateY(0); }
+    50% { transform: rotate(45deg) translateY(5px); }
+  }
+
+  /* IMPORTANCE */
+  #importance {
+    padding: 120px 5vw;
+    background: linear-gradient(180deg, #b8daf0 0%, #cce4f5 100%);
+    position: relative; overflow: hidden;
+  }
+  #importance::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg, transparent 0, transparent 79px,
+      rgba(0,102,204,0.05) 79px, rgba(0,102,204,0.05) 80px
+    );
+    pointer-events: none;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 18px; display: block;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 5vw, 4.2rem);
+    line-height: 1; color: var(--tarmac);
+    margin-bottom: 24px; letter-spacing: 0.03em;
+  }
+  .section-title .accent { color: var(--accent); }
+
+  .importance-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 60px; align-items: center; max-width: 1100px; margin: 0 auto;
+  }
+  .importance-text p {
+    font-size: 1.08rem; line-height: 1.75; color: var(--text-mid);
+    margin-bottom: 20px;
+  }
+  .importance-text p strong { color: var(--tarmac); }
+
+  .cost-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .cost-card {
+    background: var(--surface); border-radius: 12px;
+    padding: 28px 22px; border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0,80,180,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative; overflow: hidden;
+  }
+  .cost-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--accent);
+  }
+  .cost-card.red::before { background: var(--red-alert); }
+  .cost-card.gold::before { background: var(--gold); }
+  .cost-card.green::before { background: var(--green-clear); }
+  .cost-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,80,180,0.14); }
+  .cost-card-icon { font-size: 2.2rem; margin-bottom: 12px; display: block; }
+  .cost-card-value {
+    font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
+    color: var(--tarmac); letter-spacing: 0.04em; display: block; line-height: 1;
+  }
+  .cost-card.red .cost-card-value { color: var(--red-alert); }
+  .cost-card.gold .cost-card-value { color: var(--gold); }
+  .cost-card.green .cost-card-value { color: var(--green-clear); }
+  .cost-card-label { font-size: 0.78rem; color: var(--text-soft); margin-top: 6px; line-height: 1.45; }
+
+  /* JOURNEY */
+  #journey {
+    padding: 100px 5vw;
+    background: linear-gradient(180deg, #cce4f5 0%, #e8f4fd 100%);
+  }
+  .journey-header { text-align: center; max-width: 680px; margin: 0 auto 80px; }
+  .journey-header p { font-size: 1.1rem; color: var(--text-mid); line-height: 1.7; }
+
+  .airport-scroll-wrapper {
+    position: relative; max-width: 1100px; margin: 0 auto;
+    padding: 0 0 60px;
+  }
+  .airport-line {
+    position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(180deg, transparent, var(--accent) 10%, var(--accent) 90%, transparent);
+    transform: translateX(-50%); opacity: 0.3;
+  }
+  .airport-step {
+    display: grid; grid-template-columns: 1fr 80px 1fr;
+    gap: 0; align-items: start; margin-bottom: 80px;
+    opacity: 0; transform: translateY(40px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .airport-step.visible { opacity: 1; transform: translateY(0); }
+  .airport-step:nth-child(even) .step-content-left { order: 3; text-align: left; }
+  .airport-step:nth-child(even) .step-content-right { order: 1; text-align: right; }
+  .airport-step:nth-child(even) .step-node { order: 2; }
+
+  .step-node {
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+  }
+  .step-circle {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: white; border: 2.5px solid var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; box-shadow: 0 4px 20px rgba(0,102,204,0.18);
+    position: relative; z-index: 1;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .airport-step.visible .step-circle {
+    animation: nodePopIn 0.5s 0.3s ease both;
+  }
+  @keyframes nodePopIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .step-content-left, .step-content-right { padding: 0 36px; }
+  .step-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
+    color: var(--tarmac); letter-spacing: 0.04em; margin-bottom: 8px;
+  }
+  .step-desc { font-size: 0.92rem; color: var(--text-soft); line-height: 1.65; }
+  .step-tag {
+    display: inline-block; font-family: 'Space Mono', monospace;
+    font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
+    background: var(--accent-glow); color: var(--accent);
+    border: 1px solid rgba(0,102,204,0.2);
+    padding: 4px 10px; border-radius: 3px; margin-bottom: 10px;
+  }
+
+  /* FEATURES */
+  #features {
+    padding: 120px 5vw;
+    background: var(--tarmac);
+    position: relative; overflow: hidden;
+  }
+  #features::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,102,204,0.18) 0%, transparent 70%),
+      repeating-linear-gradient(0deg, transparent 0, transparent 39px, rgba(255,255,255,0.02) 39px, rgba(255,255,255,0.02) 40px);
+    pointer-events: none;
+  }
+  #features .section-label { color: var(--accent-bright); }
+  #features .section-title { color: white; }
+  .features-intro { color: rgba(255,255,255,0.55); font-size: 1.1rem; line-height: 1.7; max-width: 560px; margin-bottom: 70px; }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .feature-card {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; padding: 36px 28px;
+    position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.5s, transform 0.5s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .feature-card.visible { opacity: 1; transform: translateY(0); }
+  .feature-card:hover {
+    background: rgba(0,102,204,0.1);
+    border-color: rgba(0,136,255,0.35);
+    box-shadow: 0 12px 48px rgba(0,102,204,0.2);
+    transform: translateY(-4px) !important;
+  }
+  .feature-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .feature-card:hover::after { opacity: 1; }
+
+  .feature-icon { font-size: 2.2rem; margin-bottom: 18px; display: block; filter: drop-shadow(0 0 8px rgba(0,136,255,0.4)); }
+  .feature-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: white; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .feature-desc { font-size: 0.88rem; color: rgba(255,255,255,0.5); line-height: 1.65; }
+
+  /* DEMO */
+  #demo {
+    padding: 120px 5vw;
+    background: linear-gradient(180deg, #e8f4fd 0%, #daeef8 100%);
+  }
+  .demo-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+  .demo-inner .section-title { text-align: center; }
+  .demo-sub { font-size: 1.08rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 48px; }
+
+  .video-container {
+    position: relative; width: 100%; padding-bottom: 56.25%;
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,80,180,0.18);
+    border: 1.5px solid var(--border);
+  }
+  .video-container iframe {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  }
+  .video-placeholder {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, #1a2332 0%, #0d3a6b 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: none;
+  }
+  .play-btn {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(0,136,255,0.9); border: 3px solid white;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px; transition: transform 0.3s, box-shadow 0.3s;
+    animation: playPulse 2.5s ease infinite;
+  }
+  .play-btn:hover { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(0,136,255,0.15); }
+  @keyframes playPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,136,255,0.4); }
+    50% { box-shadow: 0 0 0 16px rgba(0,136,255,0); }
+  }
+  .play-btn svg { margin-left: 5px; }
+  .video-placeholder p { font-family: 'Space Mono', monospace; font-size: 0.75rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+
+  /* INSPECT FLOW */
+  #inspect-flow {
+    padding: 120px 5vw;
+    background: linear-gradient(180deg, #daeef8 0%, #cce4f5 100%);
+  }
+  .inspect-header { max-width: 680px; margin-bottom: 70px; }
+  .zones-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1100px;
+  }
+  .zone-card {
+    background: var(--surface); border-radius: 10px;
+    padding: 22px 18px; border: 1px solid var(--border);
+    text-align: center;
+    opacity: 0; transform: scale(0.92);
+    transition: opacity 0.4s, transform 0.4s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .zone-card.visible { opacity: 1; transform: scale(1); }
+  .zone-card:hover {
+    box-shadow: 0 8px 32px rgba(0,102,204,0.14);
+    border-color: rgba(0,102,204,0.3); transform: scale(1.04) !important;
+  }
+  .zone-num { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--accent); letter-spacing: 0.15em; margin-bottom: 6px; display: block; }
+  .zone-emoji { font-size: 1.8rem; display: block; margin-bottom: 8px; }
+  .zone-name { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--tarmac); letter-spacing: 0.05em; }
+  .zone-critical { font-size: 0.62rem; color: var(--red-alert); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 5px; }
+
+  /* AI MODULE */
+  #ai-module {
+    padding: 120px 5vw;
+    background: var(--tarmac);
+    position: relative; overflow: hidden;
+  }
+  #ai-module::before {
+    content: ''; position: absolute;
+    right: -10%; top: 50%; transform: translateY(-50%);
+    width: 55vw; height: 55vw; border-radius: 50%;
+    border: 1px solid rgba(0,136,255,0.12);
+    pointer-events: none;
+  }
+  #ai-module::after {
+    content: ''; position: absolute;
+    right: -5%; top: 50%; transform: translateY(-50%);
+    width: 40vw; height: 40vw; border-radius: 50%;
+    border: 1px solid rgba(0,136,255,0.08);
+    pointer-events: none;
+  }
+  .ai-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1100px; margin: 0 auto; }
+  .ai-text .section-label { color: var(--accent-bright); }
+  .ai-text .section-title { color: white; }
+  .ai-text p { color: rgba(255,255,255,0.55); font-size: 1rem; line-height: 1.75; margin-bottom: 16px; }
+
+  .ocr-demo {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(0,136,255,0.2);
+    border-radius: 14px; padding: 28px; position: relative; overflow: hidden;
+    opacity: 0; transform: translateX(40px);
+    transition: opacity 0.6s, transform 0.6s;
+  }
+  .ocr-demo.visible { opacity: 1; transform: translateX(0); }
+  .ocr-title { font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.18em; color: var(--accent-bright); text-transform: uppercase; margin-bottom: 20px; }
+  .ocr-field {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: rgba(255,255,255,0.04); border-radius: 6px;
+    margin-bottom: 8px; border-left: 2px solid rgba(0,136,255,0.4);
+  }
+  .ocr-key { font-family: 'Space Mono', monospace; font-size: 0.68rem; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
+  .ocr-val { font-size: 0.82rem; color: white; font-weight: 500; }
+  .ocr-val.green { color: #4ade80; }
+  .ocr-val.red { color: #f87171; }
+  .ocr-val.amber { color: #fbbf24; }
+  .scan-line {
+    position: absolute; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--accent-bright) 50%, transparent 100%);
+    animation: scanAnim 3s linear infinite; opacity: 0.7;
+    pointer-events: none;
+  }
+  @keyframes scanAnim {
+    0% { top: 0; }
+    100% { top: 100%; }
+  }
+
+  /* COMPLIANCE */
+  #compliance {
+    padding: 100px 5vw;
+    background: linear-gradient(180deg, #cce4f5 0%, #e8f4fd 100%);
+  }
+  .compliance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; max-width: 1100px; margin: 60px auto 0; }
+  .comp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 36px 26px;
+    box-shadow: 0 4px 20px rgba(0,80,180,0.06);
+    text-align: center;
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.5s, transform 0.5s, box-shadow 0.3s;
+  }
+  .comp-card.visible { opacity: 1; transform: translateY(0); }
+  .comp-card:hover { box-shadow: 0 10px 40px rgba(0,80,180,0.12); transform: translateY(-3px) !important; }
+  .comp-icon { font-size: 2.8rem; margin-bottom: 16px; display: block; }
+  .comp-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: var(--tarmac); letter-spacing: 0.06em; margin-bottom: 8px; }
+  .comp-desc { font-size: 0.85rem; color: var(--text-soft); line-height: 1.6; }
+
+  /* CTA */
+  #cta {
+    padding: 120px 5vw; text-align: center;
+    background: var(--tarmac); position: relative; overflow: hidden;
+  }
+  #cta::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 100%, rgba(0,102,204,0.22) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    color: white; letter-spacing: 0.03em;
+    line-height: 0.95; margin-bottom: 28px;
+  }
+  .cta-title .accent { color: var(--accent-bright); }
+  .cta-sub { font-size: 1.1rem; color: rgba(255,255,255,0.55); max-width: 520px; margin: 0 auto 48px; line-height: 1.7; }
+  .cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  .btn-cta-primary {
+    background: var(--accent); color: white;
+    padding: 18px 42px; border-radius: 8px;
+    font-size: 0.92rem; font-weight: 600; letter-spacing: 0.09em;
+    text-transform: uppercase; text-decoration: none;
+    transition: all 0.25s; cursor: none;
+    box-shadow: 0 8px 32px rgba(0,102,204,0.4);
+  }
+  .btn-cta-primary:hover {
+    background: var(--accent-bright);
+    box-shadow: 0 12px 48px rgba(0,136,255,0.5);
+    transform: translateY(-3px);
+  }
+  .btn-cta-ghost {
+    background: transparent; color: rgba(255,255,255,0.8);
+    padding: 18px 40px; border-radius: 8px;
+    font-size: 0.92rem; font-weight: 500; letter-spacing: 0.07em;
+    text-transform: uppercase; text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    transition: all 0.25s; cursor: none;
+  }
+  .btn-cta-ghost:hover {
+    border-color: rgba(0,136,255,0.6); color: var(--accent-bright);
+    background: rgba(0,136,255,0.07);
+    transform: translateY(-2px);
+  }
+
+  /* FOOTER */
+  footer {
+    background: #0d1825; padding: 40px 5vw;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; }
+  .footer-logo span { color: var(--accent); }
+  .footer-text { font-size: 0.75rem; color: rgba(255,255,255,0.25); letter-spacing: 0.08em; }
+  .footer-cert { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: rgba(255,255,255,0.2); letter-spacing: 0.12em; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* TICKER */
+  .ticker-wrap {
+    background: var(--tarmac); overflow: hidden; padding: 12px 0;
+    border-top: 1px solid rgba(0,136,255,0.15); border-bottom: 1px solid rgba(0,136,255,0.15);
+  }
+  .ticker-inner {
+    display: flex; gap: 0; width: max-content;
+    animation: tickerScroll 35s linear infinite;
+  }
+  .ticker-item {
+    font-family: 'Space Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.14em; color: rgba(255,255,255,0.4); text-transform: uppercase;
+    padding: 0 40px; white-space: nowrap;
+  }
+  .ticker-item .dot { color: var(--accent-bright); margin-right: 10px; }
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.65s ease, transform 0.65s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .importance-grid, .ai-grid { grid-template-columns: 1fr; gap: 40px; }
+    .features-grid { grid-template-columns: 1fr 1fr; }
+    .zones-grid { grid-template-columns: repeat(3, 1fr); }
+    .compliance-grid { grid-template-columns: 1fr 1fr; }
+    .airport-step { grid-template-columns: 1fr 60px 1fr; }
+    .nav-links { display: none; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+    .hero-stats { grid-template-columns: 1fr 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .zones-grid { grid-template-columns: 1fr 1fr; }
+    .compliance-grid { grid-template-columns: 1fr; }
+    .cost-cards { grid-template-columns: 1fr; }
+    .hero-stats { grid-template-columns: 1fr; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .airport-step { grid-template-columns: 1fr; }
+    .step-node { display: none; }
+    .airport-step:nth-child(even) .step-content-left { order: unset; text-align: left; }
+    .airport-step:nth-child(even) .step-content-right { order: unset; text-align: left; }
+    .nav-right { gap: 8px; }
+    .nav-cta { padding: 8px 14px; font-size: 0.72rem; }
+  }
+</style>
+
+<!-- Google tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NHE2B8CJ0L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NHE2B8CJ0L');
+</script>
+
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a href="#hero" class="nav-logo">AVSEC<span>PRO</span><span class="nav-badge">v3.0</span></a>
+  <ul class="nav-links">
+    <li><a href="#importance" data-es="¿Por qué?" data-en="Why?">¿Por qué?</a></li>
+    <li><a href="#journey" data-es="Flujo" data-en="Flow">Flujo</a></li>
+    <li><a href="#features" data-es="Funcionalidades" data-en="Features">Funcionalidades</a></li>
+    <li><a href="#demo" data-es="Demo" data-en="Demo">Demo</a></li>
+    <li><a href="#compliance" data-es="Cumplimiento" data-en="Compliance">Cumplimiento</a></li>
+  </ul>
+  <div class="nav-right">
+    <!-- LANGUAGE TOGGLE -->
+    <div class="lang-toggle" role="group" aria-label="Language selector">
+      <button class="lang-btn active" id="btnES" onclick="setLang('es')" aria-label="Español">ES</button>
+      <div class="lang-divider"></div>
+      <button class="lang-btn" id="btnEN" onclick="setLang('en')" aria-label="English">EN</button>
+    </div>
+    <a href="#cta" class="nav-cta" data-es="Solicitar Demo" data-en="Request Demo">Solicitar Demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="runway-bg" id="runwayBg"></div>
+
+  <svg class="hero-aircraft" viewBox="0 0 900 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 140 L400 120 L750 140 L820 160 L780 170 L400 150 L50 170 Z" fill="#1a2332"/>
+    <path d="M300 120 L420 20 L470 22 L380 125 Z" fill="#1a2332"/>
+    <path d="M300 150 L380 240 L420 235 L340 152 Z" fill="#1a2332"/>
+    <path d="M650 138 L700 90 L720 92 L675 142 Z" fill="#1a2332"/>
+    <circle cx="820" cy="160" r="12" fill="#1a2332"/>
+    <rect x="790" y="155" width="60" height="10" rx="5" fill="#1a2332"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="pulse-dot"></span>
+      <span data-es="Sistema desarrollado bajo normas OACI Anexo 17 · DGAC Costa Rica" data-en="System developed under ICAO Annex 17 standards · DGAC Costa Rica">Sistema desarrollado bajo normas OACI Anexo 17 · DGAC Costa Rica</span>
+    </div>
+    <h1 class="hero-title">
+      <span data-es="Seguridad" data-en="Airport">Seguridad</span><br>
+      <span class="accent" data-es="Aeropuertaria" data-en="Security">Aeropuertaria</span>
+      <span class="line2" data-es="con IA" data-en="with AI">con IA</span>
+    </h1>
+    <p class="hero-subtitle" data-es="Digitaliza, audita y protege cada operación en tierra. Desde la inspección de aeronave hasta el control de accesos — todo registrado, verificado y reportado en tiempo real." data-en="Digitize, audit and protect every ground operation. From aircraft inspection to access control — everything recorded, verified and reported in real time.">
+      Digitaliza, audita y protege cada operación en tierra. Desde la inspección de aeronave hasta el control de accesos — todo registrado, verificado y reportado en tiempo real.
+    </p>
+    <div class="hero-actions">
+      <a href="#demo" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4l6 4-6 4V4z" fill="white"/></svg>
+        <span data-es="Ver Demo" data-en="Watch Demo">Ver Demo</span>
+      </a>
+      <a href="#features" class="btn-secondary" data-es="Explorar funcionalidades" data-en="Explore features">Explorar funcionalidades</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num" data-target="12">0</span>
+        <span class="stat-label" data-es="Zonas de Inspección" data-en="Inspection Zones">Zonas de Inspección</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="23">0</span>
+        <span class="stat-label" data-es="Checkpoints totales" data-en="Total Checkpoints">Checkpoints totales</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num" data-target="100">0</span>
+        <span class="stat-label" style="font-size:0.62rem" data-es="% Evidencia Fotográfica" data-en="% Photo Evidence">% Evidencia Fotográfica</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <span class="scroll-text" data-es="Scroll para explorar" data-en="Scroll to explore">Scroll para explorar</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- IMPORTANCE -->
+<section id="importance">
+  <div class="importance-grid reveal">
+    <div class="importance-text">
+      <span class="section-label" data-es="// Por qué importa" data-en="// Why it matters">// Por qué importa</span>
+      <h2 class="section-title">
+        <span data-es="Cada segundo" data-en="Every second">Cada segundo</span><br>
+        <span data-es="cuenta en" data-en="counts on the">cuenta en</span><br>
+        <span class="accent" data-es="rampa" data-en="ramp">rampa</span>
+      </h2>
+      <p data-es="Un proceso de inspección mal ejecutado no es solo un riesgo de seguridad — es una exposición económica directa. Las autoridades internacionales de aviación civil pueden emitir multas que <strong>superan los $500,000 USD por incidente</strong> cuando no existe trazabilidad documental." data-en="A poorly executed inspection process is not just a security risk — it's direct financial exposure. International civil aviation authorities can issue fines <strong>exceeding $500,000 USD per incident</strong> when documentary traceability does not exist.">
+        Un proceso de inspección mal ejecutado no es solo un riesgo de seguridad — es una exposición económica directa. Las autoridades internacionales de aviación civil pueden emitir multas que <strong>superan los $500,000 USD por incidente</strong> cuando no existe trazabilidad documental.
+      </p>
+      <p data-es="Más allá de las sanciones, un retraso operacional en una ave mainline puede desencadenar retrasos en cascada que afectan <strong>docenas de vuelos y miles de pasajeros</strong>, con costos de compensación que escalan por hora." data-en="Beyond penalties, an operational delay on a mainline aircraft can trigger cascading delays affecting <strong>dozens of flights and thousands of passengers</strong>, with compensation costs that escalate by the hour.">
+        Más allá de las sanciones, un retraso operacional en una ave mainline puede desencadenar retrasos en cascada que afectan <strong>docenas de vuelos y miles de pasajeros</strong>, con costos de compensación que escalan por hora.
+      </p>
+      <p data-es="AVSEC PRO convierte cada inspección en un registro auditado, firmado digitalmente y respaldado con evidencia fotográfica — exactamente lo que exigen los estándares internacionales." data-en="AVSEC PRO turns every inspection into an audited record, digitally signed and backed with photographic evidence — exactly what international standards demand.">
+        AVSEC PRO convierte cada inspección en un registro auditado, firmado digitalmente y respaldado con evidencia fotográfica — exactamente lo que exigen los estándares internacionales.
+      </p>
+    </div>
+    <div class="cost-cards">
+      <div class="cost-card red reveal">
+        <span class="cost-card-icon">⚠️</span>
+        <span class="cost-card-value">$500K+</span>
+        <div class="cost-card-label" data-es="Multa máxima por incidente no documentado según estándares OACI" data-en="Maximum fine per undocumented incident under ICAO standards">Multa máxima por incidente no documentado según estándares OACI</div>
+      </div>
+      <div class="cost-card gold reveal">
+        <span class="cost-card-icon">⏱️</span>
+        <span class="cost-card-value">$15K/hr</span>
+        <div class="cost-card-label" data-es="Costo operacional por hora de retraso en ave widebody" data-en="Operational cost per hour of delay on a widebody aircraft">Costo operacional por hora de retraso en ave widebody</div>
+      </div>
+      <div class="cost-card green reveal">
+        <span class="cost-card-icon">✅</span>
+        <span class="cost-card-value">100%</span>
+        <div class="cost-card-label" data-es="Trazabilidad con firma digital y evidencia fotográfica en cada zona" data-en="Traceability with digital signature and photo evidence in every zone">Trazabilidad con firma digital y evidencia fotográfica en cada zona</div>
+      </div>
+      <div class="cost-card reveal">
+        <span class="cost-card-icon">📊</span>
+        <span class="cost-card-value">3 OPS</span>
+        <div class="cost-card-label" data-es="Flujos de trabajo unificados: Inspección, Accesos y Rampa" data-en="Unified workflows: Inspection, Access Control and Ramp">Flujos de trabajo unificados: Inspección, Accesos y Rampa</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section id="journey">
+  <div class="journey-header reveal">
+    <span class="section-label" data-es="// Flujo de operación" data-en="// Operation flow">// Flujo de operación</span>
+    <h2 class="section-title">
+      <span data-es="Un vuelo." data-en="One flight.">Un vuelo.</span><br>
+      <span class="accent" data-es="Una trayectoria" data-en="One complete">Una trayectoria</span><br>
+      <span data-es="completa." data-en="journey.">completa.</span>
+    </h2>
+    <p data-es="Cada operación guía al oficial de seguridad paso a paso, desde que el vuelo aterriza hasta que el avión hace pushback. Avanza en el scroll para recorrer el aeropuerto." data-en="Every operation guides the security officer step by step, from when the flight lands until the aircraft pushes back. Scroll to walk through the airport.">
+      Cada operación guía al oficial de seguridad paso a paso, desde que el vuelo aterriza hasta que el avión hace pushback. Avanza en el scroll para recorrer el aeropuerto.
+    </p>
+  </div>
+
+  <div class="airport-scroll-wrapper">
+    <div class="airport-line"></div>
+
+    <div class="airport-step">
+      <div class="step-content-left">
+        <span class="step-tag" data-es="Zona de acceso" data-en="Access zone">Zona de acceso</span>
+        <div class="step-title" data-es="Login & Autenticación" data-en="Login & Authentication">Login & Autenticación</div>
+        <div class="step-desc" data-es="El oficial accede con credenciales únicas. La sesión está cifrada con expiración automática de 12 horas. Cada rol ve exactamente lo que necesita." data-en="The officer logs in with unique credentials. The session is encrypted with automatic 12-hour expiration. Each role sees exactly what it needs.">El oficial accede con credenciales únicas. La sesión está cifrada con expiración automática de 12 horas. Cada rol ve exactamente lo que necesita.</div>
+      </div>
+      <div class="step-node"><div class="step-circle">🔐</div></div>
+      <div class="step-content-right"></div>
+    </div>
+
+    <div class="airport-step">
+      <div class="step-content-left"></div>
+      <div class="step-node"><div class="step-circle">✈️</div></div>
+      <div class="step-content-right">
+        <span class="step-tag" data-es="Datos del vuelo" data-en="Flight data">Datos del vuelo</span>
+        <div class="step-title" data-es="Registro del Vuelo" data-en="Flight Registration">Registro del Vuelo</div>
+        <div class="step-desc" data-es="Selección de aerolínea, número de vuelo, puerta, destino y puente de abordaje. Todo queda vinculado a una carpeta de evidencias única en la nube." data-en="Selection of airline, flight number, gate, destination and boarding bridge. Everything is linked to a unique evidence folder in the cloud.">Selección de aerolínea, número de vuelo, puerta, destino y puente de abordaje. Todo queda vinculado a una carpeta de evidencias única en la nube.</div>
+      </div>
+    </div>
+
+    <div class="airport-step">
+      <div class="step-content-left">
+        <span class="step-tag" data-es="Pre-operación" data-en="Pre-operation">Pre-operación</span>
+        <div class="step-title" data-es="Escaneo de Credenciales" data-en="Credential Scanning">Escaneo de Credenciales</div>
+        <div class="step-desc" data-es="Cámara del dispositivo + reconocimiento óptico con IA. Nombre, empresa, número de cédula, vigencia y nivel de acceso se extraen automáticamente. Credenciales vencidas se bloquean con alerta visual." data-en="Device camera + AI optical recognition. Name, company, ID number, validity and access level are extracted automatically. Expired credentials are flagged with a visual alert.">Cámara del dispositivo + reconocimiento óptico con IA. Nombre, empresa, número de cédula, vigencia y nivel de acceso se extraen automáticamente. Credenciales vencidas se bloquean con alerta visual.</div>
+      </div>
+      <div class="step-node"><div class="step-circle">📛</div></div>
+      <div class="step-content-right"></div>
+    </div>
+
+    <div class="airport-step">
+      <div class="step-content-left"></div>
+      <div class="step-node"><div class="step-circle">🔍</div></div>
+      <div class="step-content-right">
+        <span class="step-tag" data-es="Inspección ave" data-en="Aircraft inspection">Inspección ave</span>
+        <div class="step-title" data-es="12 Checkpoints Zonas" data-en="12 Zone Checkpoints">12 Checkpoints Zonas</div>
+        <div class="step-desc" data-es="Cabina, compartimentos, baños, cocina, equipo de emergencia, pasillos y más. Cada zona requiere un hallazgo declarado y mínimo una foto en vivo como evidencia." data-en="Cockpit, compartments, lavatories, galley, emergency equipment, aisles and more. Each zone requires a declared finding and at least one live photo as evidence.">Cabina, compartimentos, baños, cocina, equipo de emergencia, pasillos y más. Cada zona requiere un hallazgo declarado y mínimo una foto en vivo como evidencia.</div>
+      </div>
+    </div>
+
+    <div class="airport-step">
+      <div class="step-content-left">
+        <span class="step-tag" data-es="Puente de abordaje" data-en="Boarding bridge">Puente de abordaje</span>
+        <div class="step-title" data-es="Checkpoints CP1 — Puente" data-en="Checkpoints CP1 — Bridge">Checkpoints CP1 — Puente</div>
+        <div class="step-desc" data-es="13 puntos de control desde el acople del puente hasta el pushback final. Cada checkpoint registra hora exacta y foto de evidencia. El desabordaje y abordaje de pasajeros quedan completamente auditados." data-en="13 control points from bridge coupling to final pushback. Each checkpoint records exact timestamp and evidence photo. Passenger deboarding and boarding are fully audited.">13 puntos de control desde el acople del puente hasta el pushback final. Cada checkpoint registra hora exacta y foto de evidencia. El desabordaje y abordaje de pasajeros quedan completamente auditados.</div>
+      </div>
+      <div class="step-node"><div class="step-circle">🚶</div></div>
+      <div class="step-content-right"></div>
+    </div>
+
+    <div class="airport-step">
+      <div class="step-content-left"></div>
+      <div class="step-node"><div class="step-circle">📦</div></div>
+      <div class="step-content-right">
+        <span class="step-tag" data-es="Monitoreo Rampa" data-en="Ramp monitoring">Monitoreo Rampa</span>
+        <div class="step-title" data-es="Checkpoints en Tierra" data-en="Ground Checkpoints">Checkpoints en Tierra</div>
+        <div class="step-desc" data-es="18 a 22 puntos de control de carga y combustible: apertura/cierre de bins, primera y última maleta, inicio y fin del gaseo. Todo con evidencia fotográfica instantánea de la cámara en vivo." data-en="18 to 22 cargo and fuel control points: bin opening/closing, first and last bag, fueling start and end. All with instant photographic evidence from the live camera.">18 a 22 puntos de control de carga y combustible: apertura/cierre de bins, primera y última maleta, inicio y fin del gaseo. Todo con evidencia fotográfica instantánea de la cámara en vivo.</div>
+      </div>
+    </div>
+
+    <div class="airport-step">
+      <div class="step-content-left">
+        <span class="step-tag" data-es="Cierre de operación" data-en="Operation close">Cierre de operación</span>
+        <div class="step-title" data-es="Firma Digital & Reporte" data-en="Digital Signature & Report">Firma Digital & Reporte</div>
+        <div class="step-desc" data-es="El oficial firma con el dedo directamente en la pantalla. El reporte completo se envía automáticamente por correo a la gerencia, con todos los KPIs, fotos y credenciales adjuntas." data-en="The officer signs with their finger directly on the screen. The complete report is automatically emailed to management, with all KPIs, photos and credentials attached.">El oficial firma con el dedo directamente en la pantalla. El reporte completo se envía automáticamente por correo a la gerencia, con todos los KPIs, fotos y credenciales adjuntas.</div>
+      </div>
+      <div class="step-node"><div class="step-circle">✍️</div></div>
+      <div class="step-content-right"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div style="max-width:1100px; margin:0 auto;">
+    <span class="section-label" data-es="// Funcionalidades principales" data-en="// Core features">// Funcionalidades principales</span>
+    <h2 class="section-title">
+      <span data-es="Diseñado para" data-en="Built for">Diseñado para</span><br>
+      <span class="accent" data-es="el campo" data-en="the field">el campo</span>
+    </h2>
+    <p class="features-intro" data-es="Una aplicación que funciona desde el móvil del oficial, sin necesidad de infraestructura propia. Instalable como app nativa en iOS y Android." data-en="An application that runs from the officer's mobile device, with no proprietary infrastructure needed. Installable as a native app on iOS and Android.">Una aplicación que funciona desde el móvil del oficial, sin necesidad de infraestructura propia. Instalable como app nativa en iOS y Android.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title" data-es="OCR con Visión IA" data-en="AI Vision OCR">OCR con Visión IA</div>
+        <div class="feature-desc" data-es="Reconocimiento óptico de credenciales aeroportuarias. El sistema extrae automáticamente nombre, empresa, cédula, vigencia y nivel de acceso — los campos son editables si el reconocimiento no fue perfecto." data-en="Optical recognition of airport credentials. The system automatically extracts name, company, ID, validity and access level — fields are editable if recognition was imperfect.">Reconocimiento óptico de credenciales aeroportuarias. El sistema extrae automáticamente nombre, empresa, cédula, vigencia y nivel de acceso — los campos son editables si el reconocimiento no fue perfecto.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📸</span>
+        <div class="feature-title" data-es="Evidencia Fotográfica" data-en="Photo Evidence">Evidencia Fotográfica</div>
+        <div class="feature-desc" data-es="Cada zona e incidente requiere al menos una fotografía. Las imágenes se almacenan automáticamente en la nube en carpetas organizadas por vuelo y fecha, accesibles desde cualquier dispositivo autorizado." data-en="Every zone and incident requires at least one photograph. Images are automatically stored in the cloud in folders organized by flight and date, accessible from any authorized device.">Cada zona e incidente requiere al menos una fotografía. Las imágenes se almacenan automáticamente en la nube en carpetas organizadas por vuelo y fecha, accesibles desde cualquier dispositivo autorizado.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">✍️</span>
+        <div class="feature-title" data-es="Firma Digital Biométrica" data-en="Biometric Digital Signature">Firma Digital Biométrica</div>
+        <div class="feature-desc" data-es="El oficial firma con el dedo sobre el canvas táctil del dispositivo al cerrar cada operación. La firma PNG se guarda como evidencia adicional junto con el timestamp exacto." data-en="The officer signs with their finger on the device's touch canvas when closing each operation. The PNG signature is saved as additional evidence along with the exact timestamp.">El oficial firma con el dedo sobre el canvas táctil del dispositivo al cerrar cada operación. La firma PNG se guarda como evidencia adicional junto con el timestamp exacto.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📧</span>
+        <div class="feature-title" data-es="Reporte Automático por Correo" data-en="Automatic Email Report">Reporte Automático por Correo</div>
+        <div class="feature-desc" data-es="Al finalizar cada operación, se genera y envía automáticamente un reporte HTML responsivo con fondo oscuro a todos los destinatarios configurados — gerencia, supervisión y administración." data-en="Upon completing each operation, a responsive dark-themed HTML report is automatically generated and sent to all configured recipients — management, supervision and administration.">Al finalizar cada operación, se genera y envía automáticamente un reporte HTML responsivo con fondo oscuro a todos los destinatarios configurados — gerencia, supervisión y administración.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📋</span>
+        <div class="feature-title" data-es="Historial y Recuperación" data-en="History & Recovery">Historial y Recuperación</div>
+        <div class="feature-desc" data-es="Consulta y filtra operaciones anteriores. Si una operación quedó incompleta, el sistema permite retomarla desde el punto exacto donde se interrumpió — sin perder ningún dato." data-en="Search and filter past operations. If an operation was left incomplete, the system allows resuming it from the exact point where it was interrupted — without losing any data.">Consulta y filtra operaciones anteriores. Si una operación quedó incompleta, el sistema permite retomarla desde el punto exacto donde se interrumpió — sin perder ningún dato.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <div class="feature-title" data-es="Control por Roles" data-en="Role-Based Access">Control por Roles</div>
+        <div class="feature-desc" data-es="Oficiales ven solo sus operaciones. Supervisores y admins tienen visibilidad total. El panel de administración incluye feed en vivo, reportes de incidentes y KPIs globales del aeropuerto." data-en="Officers see only their own operations. Supervisors and admins have full visibility. The admin panel includes a live feed, incident reports and global airport KPIs.">Oficiales ven solo sus operaciones. Supervisores y admins tienen visibilidad total. El panel de administración incluye feed en vivo, reportes de incidentes y KPIs globales del aeropuerto.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⏱️</span>
+        <div class="feature-title" data-es="Cronómetro de Operación" data-en="Operation Timer">Cronómetro de Operación</div>
+        <div class="feature-desc" data-es="Tiempo de operación visible en tiempo real. Si la operación de rampa supera los 20 minutos, el cronómetro cambia a ámbar como alerta visual. El tiempo queda registrado en el reporte final." data-en="Operation time visible in real time. If the ramp operation exceeds 20 minutes, the timer turns amber as a visual alert. Time is recorded in the final report.">Tiempo de operación visible en tiempo real. Si la operación de rampa supera los 20 minutos, el cronómetro cambia a ámbar como alerta visual. El tiempo queda registrado en el reporte final.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🚨</span>
+        <div class="feature-title" data-es="Reporte de Incidentes" data-en="Incident Reporting">Reporte de Incidentes</div>
+        <div class="feature-desc" data-es="Botón de reporte de incidentes integrado en el flujo de rampa. Permite adjuntar múltiples fotos, redactar descripción detallada, y el incidente queda registrado en el historial de la operación." data-en="Incident report button integrated in the ramp workflow. Allows attaching multiple photos, writing a detailed description, and the incident is recorded in the operation history.">Botón de reporte de incidentes integrado en el flujo de rampa. Permite adjuntar múltiples fotos, redactar descripción detallada, y el incidente queda registrado en el historial de la operación.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📱</span>
+        <div class="feature-title" data-es="PWA — Sin instalación" data-en="PWA — No install needed">PWA — Sin instalación</div>
+        <div class="feature-desc" data-es="Funciona desde el navegador del móvil del oficial. Instalable como Progressive Web App en iOS y Android con acceso directo desde la pantalla de inicio, como si fuera una app nativa." data-en="Runs from the officer's mobile browser. Installable as a Progressive Web App on iOS and Android with direct access from the home screen, just like a native app.">Funciona desde el navegador del móvil del oficial. Instalable como Progressive Web App en iOS y Android con acceso directo desde la pantalla de inicio, como si fuera una app nativa.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section id="demo">
+  <div class="demo-inner">
+    <span class="section-label reveal" data-es="// Demo del sistema" data-en="// System demo">// Demo del sistema</span>
+    <h2 class="section-title reveal">AVSEC PRO<br><span class="accent" data-es="en acción" data-en="in action">en acción</span></h2>
+    <p class="demo-sub reveal" data-es="Mira cómo un oficial de seguridad completa una inspección de aeronave completa — desde el escaneo de credenciales hasta el envío del reporte." data-en="Watch how a security officer completes a full aircraft inspection — from credential scanning to report delivery.">Mira cómo un oficial de seguridad completa una inspección de aeronave completa — desde el escaneo de credenciales hasta el envío del reporte.</p>
+
+    <div class="video-container reveal">
+      <div class="video-placeholder" id="videoPlaceholder">
+        <div class="play-btn" onclick="loadVideo()">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M10 7l14 7-14 7V7z" fill="white"/></svg>
+        </div>
+        <p data-es="Demo video · Próximamente" data-en="Demo video · Coming soon">Demo video · Próximamente</p>
+        <p style="font-size:0.62rem; margin-top:8px; opacity:0.4;" data-es="Reemplaza esta sección con tu embed de YouTube" data-en="Replace this section with your YouTube embed">Reemplaza esta sección con tu embed de YouTube</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSPECT FLOW -->
+<section id="inspect-flow">
+  <div class="inspect-header reveal">
+    <span class="section-label" data-es="// Las 12 zonas de inspección" data-en="// The 12 inspection zones">// Las 12 zonas de inspección</span>
+    <h2 class="section-title">
+      <span data-es="Cobertura" data-en="Full">Cobertura</span><br>
+      <span class="accent" data-es="total" data-en="aircraft">total</span>
+      <span data-es=" de la aeronave" data-en=" coverage"> de la aeronave</span>
+    </h2>
+  </div>
+  <div class="zones-grid" id="zonesGrid">
+    <div class="zone-card"><span class="zone-num">ZONE 01</span><span class="zone-emoji">🛫</span><div class="zone-name" data-es="Cabina" data-en="Cockpit">Cabina</div><div class="zone-critical">⬥ <span data-es="Crítica" data-en="Critical">Crítica</span></div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 02</span><span class="zone-emoji">🗄️</span><div class="zone-name" data-es="Compartimentos Superiores" data-en="Overhead Bins">Compartimentos Superiores</div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 03</span><span class="zone-emoji">💺</span><div class="zone-name" data-es="Bolsillos de Asientos" data-en="Seat Pockets">Bolsillos de Asientos</div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 04</span><span class="zone-emoji">⬇️</span><div class="zone-name" data-es="Bajo los Asientos" data-en="Under Seats">Bajo los Asientos</div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 05</span><span class="zone-emoji">🚶</span><div class="zone-name" data-es="Pasillos y Suelo" data-en="Aisles & Floor">Pasillos y Suelo</div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 06</span><span class="zone-emoji">🚿</span><div class="zone-name" data-es="Lavabos" data-en="Lavatories">Lavabos</div><div class="zone-critical">⬥ <span data-es="Crítica" data-en="Critical">Crítica</span></div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 07</span><span class="zone-emoji">🍽️</span><div class="zone-name" data-es="Galera" data-en="Galley">Galera</div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 08</span><span class="zone-emoji">🗑️</span><div class="zone-name" data-es="Basureros" data-en="Waste Bins">Basureros</div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 09</span><span class="zone-emoji">🦺</span><div class="zone-name" data-es="Equipo de Emergencia" data-en="Emergency Equipment">Equipo de Emergencia</div><div class="zone-critical">⬥ <span data-es="Crítica" data-en="Critical">Crítica</span></div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 10</span><span class="zone-emoji">🚫</span><div class="zone-name" data-es="Equipo No Autorizado" data-en="Unauthorized Equipment">Equipo No Autorizado</div><div class="zone-critical">⬥ <span data-es="Crítica" data-en="Critical">Crítica</span></div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 11</span><span class="zone-emoji">📋</span><div class="zone-name" data-es="Manifiesto de Carga" data-en="Cargo Manifest">Manifiesto de Carga</div><div class="zone-critical">⬥ <span data-es="Crítica" data-en="Critical">Crítica</span></div></div>
+    <div class="zone-card"><span class="zone-num">ZONE 12</span><span class="zone-emoji">🚪</span><div class="zone-name" data-es="Salidas y Sellos" data-en="Exits & Seals">Salidas y Sellos</div><div class="zone-critical">⬥ <span data-es="Crítica" data-en="Critical">Crítica</span></div></div>
+  </div>
+</section>
+
+<!-- AI MODULE -->
+<section id="ai-module">
+  <div class="ai-grid">
+    <div class="ai-text reveal">
+      <span class="section-label" data-es="// Reconocimiento óptico con IA" data-en="// AI optical recognition">// Reconocimiento óptico con IA</span>
+      <h2 class="section-title">
+        <span data-es="Credenciales" data-en="Credentials">Credenciales</span><br>
+        <span class="accent" data-es="leídas" data-en="read">leídas</span><br>
+        <span data-es="en segundos" data-en="in seconds">en segundos</span>
+      </h2>
+      <p data-es="El módulo de visión artificial analiza la fotografía de cualquier credencial aeroportuaria y extrae automáticamente todos los datos relevantes, incluyendo la validación de vigencia en tiempo real." data-en="The computer vision module analyzes the photograph of any airport credential and automatically extracts all relevant data, including real-time validity validation.">El módulo de visión artificial analiza la fotografía de cualquier credencial aeroportuaria y extrae automáticamente todos los datos relevantes, incluyendo la validación de vigencia en tiempo real.</p>
+      <p data-es="Si la credencial está vencida, el sistema la marca visualmente con una alerta roja y registra el intento — sin bloquear la operación, pero garantizando trazabilidad total." data-en="If the credential is expired, the system marks it visually with a red alert and logs the attempt — without blocking the operation, but guaranteeing full traceability.">Si la credencial está vencida, el sistema la marca visualmente con una alerta roja y registra el intento — sin bloquear la operación, pero garantizando trazabilidad total.</p>
+      <p data-es="Los campos extraídos son completamente editables, permitiendo al oficial corregir cualquier error de reconocimiento antes de confirmar el ingreso." data-en="Extracted fields are fully editable, allowing the officer to correct any recognition error before confirming entry.">Los campos extraídos son completamente editables, permitiendo al oficial corregir cualquier error de reconocimiento antes de confirmar el ingreso.</p>
+    </div>
+    <div class="ocr-demo" id="ocrDemo">
+      <div class="scan-line"></div>
+      <div class="ocr-title">// OCR output · live extraction</div>
+      <div class="ocr-field"><span class="ocr-key" data-es="NOMBRE" data-en="NAME">NOMBRE</span><span class="ocr-val" id="ocrNombre">—</span></div>
+      <div class="ocr-field"><span class="ocr-key" data-es="CÉDULA" data-en="ID NO.">CÉDULA</span><span class="ocr-val" id="ocrCedula">—</span></div>
+      <div class="ocr-field"><span class="ocr-key" data-es="EMPRESA" data-en="COMPANY">EMPRESA</span><span class="ocr-val" id="ocrEmpresa">—</span></div>
+      <div class="ocr-field"><span class="ocr-key" data-es="VIGENCIA" data-en="EXPIRES">VIGENCIA</span><span class="ocr-val" id="ocrVigencia">—</span></div>
+      <div class="ocr-field"><span class="ocr-key" data-es="N° CREDENCIAL" data-en="BADGE NO.">N° CREDENCIAL</span><span class="ocr-val" id="ocrNum">—</span></div>
+      <div class="ocr-field"><span class="ocr-key" data-es="ACCESO" data-en="ACCESS">ACCESO</span><span class="ocr-val" id="ocrAcceso">—</span></div>
+      <div class="ocr-field"><span class="ocr-key" data-es="ESTADO" data-en="STATUS">ESTADO</span><span class="ocr-val green" id="ocrEstado">—</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE -->
+<section id="compliance">
+  <div style="max-width:1100px; margin:0 auto;">
+    <div class="reveal" style="max-width:600px">
+      <span class="section-label" data-es="// Cumplimiento y certificación" data-en="// Compliance & certification">// Cumplimiento y certificación</span>
+      <h2 class="section-title">
+        <span data-es="Construido bajo" data-en="Built under">Construido bajo</span><br>
+        <span class="accent" data-es="estándares" data-en="international">estándares</span><br>
+        <span data-es="internacionales" data-en="standards">internacionales</span>
+      </h2>
+    </div>
+    <div class="compliance-grid">
+      <div class="comp-card">
+        <span class="comp-icon">🌐</span>
+        <div class="comp-title" data-es="OACI Anexo 17" data-en="ICAO Annex 17">OACI Anexo 17</div>
+        <div class="comp-desc" data-es="Cumplimiento con los estándares y prácticas recomendadas de la Organización de Aviación Civil Internacional para la protección de la aviación civil contra actos de interferencia ilícita." data-en="Compliance with the standards and recommended practices of the International Civil Aviation Organization for protecting civil aviation against acts of unlawful interference.">Cumplimiento con los estándares y prácticas recomendadas de la Organización de Aviación Civil Internacional para la protección de la aviación civil contra actos de interferencia ilícita.</div>
+      </div>
+      <div class="comp-card">
+        <span class="comp-icon">🏛️</span>
+        <div class="comp-title" data-es="DGAC" data-en="DGAC">DGAC</div>
+        <div class="comp-desc" data-es="Desarrollado bajo manuales de la Dirección General de Aviación Civil de Costa Rica para operaciones en el Aeropuerto Internacional Juan Santamaría (SJO/MROC)." data-en="Developed under the manuals of the Directorate General of Civil Aviation of Costa Rica for operations at Juan Santamaría International Airport (SJO/MROC).">Desarrollado bajo manuales de la Dirección General de Aviación Civil de Costa Rica para operaciones en el Aeropuerto Internacional Juan Santamaría (SJO/MROC).</div>
+      </div>
+      <div class="comp-card">
+        <span class="comp-icon">🔒</span>
+        <div class="comp-title" data-es="Seguridad de Datos" data-en="Data Security">Seguridad de Datos</div>
+        <div class="comp-desc" data-es="Todos los datos operacionales se almacenan en infraestructura de nube certificada. La clave de la API de visión artificial nunca sale del dispositivo y se transmite exclusivamente al proveedor de IA." data-en="All operational data is stored in certified cloud infrastructure. The AI vision API key never leaves the device and is transmitted exclusively to the AI provider.">Todos los datos operacionales se almacenan en infraestructura de nube certificada. La clave de la API de visión artificial nunca sale del dispositivo y se transmite exclusivamente al proveedor de IA.</div>
+      </div>
+      <div class="comp-card">
+        <span class="comp-icon">📑</span>
+        <div class="comp-title" data-es="Trazabilidad Total" data-en="Full Traceability">Trazabilidad Total</div>
+        <div class="comp-desc" data-es="Cada acción queda vinculada al usuario, dispositivo, timestamp y vuelo específico. La cadena de custodia digital es inmutable y auditada por rol." data-en="Every action is linked to the user, device, timestamp and specific flight. The digital chain of custody is immutable and audited by role.">Cada acción queda vinculada al usuario, dispositivo, timestamp y vuelo específico. La cadena de custodia digital es inmutable y auditada por rol.</div>
+      </div>
+      <div class="comp-card">
+        <span class="comp-icon">✍️</span>
+        <div class="comp-title" data-es="Firma Biométrica Legal" data-en="Legal Biometric Signature">Firma Biométrica Legal</div>
+        <div class="comp-desc" data-es="La firma digital del oficial se almacena como imagen PNG con metadatos de autenticación, cumpliendo los requisitos de validez documental para reportes de seguridad aeronáutica." data-en="The officer's digital signature is stored as a PNG image with authentication metadata, meeting documentary validity requirements for aeronautical security reports.">La firma digital del oficial se almacena como imagen PNG con metadatos de autenticación, cumpliendo los requisitos de validez documental para reportes de seguridad aeronáutica.</div>
+      </div>
+      <div class="comp-card">
+        <span class="comp-icon">📦</span>
+        <div class="comp-title" data-es="Respaldo en la Nube" data-en="Cloud Backup">Respaldo en la Nube</div>
+        <div class="comp-desc" data-es="Las hojas de registro y carpetas de evidencias fotográficas se replican automáticamente en la nube. No existe un servidor propio que pueda fallar — la arquitectura es serverless por diseño." data-en="Log sheets and photographic evidence folders are automatically replicated in the cloud. There is no proprietary server that can fail — the architecture is serverless by design.">Las hojas de registro y carpetas de evidencias fotográficas se replican automáticamente en la nube. No existe un servidor propio que pueda fallar — la arquitectura es serverless por diseño.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div style="position:relative; z-index:2;">
+    <h2 class="cta-title reveal">
+      <span data-es="Eleva el" data-en="Elevate your">Eleva el</span><br>
+      <span class="accent" data-es="estándar" data-en="airport">estándar</span><br>
+      <span data-es="de tu aeropuerto" data-en="standard">de tu aeropuerto</span>
+    </h2>
+    <p class="cta-sub reveal" data-es="AVSEC PRO transforma cada inspección en un activo documental. Reducción de riesgo de multas, trazabilidad completa, reportes automáticos." data-en="AVSEC PRO transforms every inspection into a documentary asset. Fine risk reduction, complete traceability, automatic reports.">AVSEC PRO transforma cada inspección en un activo documental. Reducción de riesgo de multas, trazabilidad completa, reportes automáticos.</p>
+    <div class="cta-actions reveal">
+      <a href="#demo" class="btn-cta-primary" data-es="Ver Demo en Vivo" data-en="Watch Live Demo">Ver Demo en Vivo</a>
+      <a href="mailto:gerencia@theaihumans.com" class="btn-cta-ghost" data-es="Contactar al equipo" data-en="Contact the team">Contactar al equipo</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">AVSEC<span>APP</span></div>
+  <div class="footer-text" data-es="Aeropuerto Internacional Juan Santamaría · SJO · MROC · Costa Rica" data-en="Juan Santamaría International Airport · SJO · MROC · Costa Rica">Aeropuerto Internacional Juan Santamaría · SJO · MROC · Costa Rica</div>
+  <div class="footer-cert">AERO AI · v3.0 · 2026</div>
+</footer>
+
+<script>
+// ============================
+// LANGUAGE SYSTEM
+// ============================
+let currentLang = localStorage.getItem('avsec_lang') || 'es';
+
+const tickerES = [
+  'Inspección de Aeronave', 'Control de Accesos', 'Operación de Rampa',
+  'OCR de Credenciales', 'Firma Digital', 'Reporte Automático', '12 Zonas de Inspección',
+  'Checkpoints CP1 · CP2', 'OACI Anexo 17', 'DGAC Costa Rica', 'PWA Nativa',
+  'Evidencia Fotográfica', 'Historial de Operaciones', 'Panel de Administración'
+];
+const tickerEN = [
+  'Aircraft Inspection', 'Access Control', 'Ramp Operations',
+  'Credential OCR', 'Digital Signature', 'Automatic Reports', '12 Inspection Zones',
+  'Checkpoints CP1 · CP2', 'ICAO Annex 17', 'DGAC Costa Rica', 'Native PWA',
+  'Photo Evidence', 'Operation History', 'Admin Dashboard'
+];
+
+function buildTicker(lang) {
+  const items = lang === 'es' ? tickerES : tickerEN;
+  const ticker = document.getElementById('tickerInner');
+  ticker.innerHTML = '';
+  [...items, ...items].forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'ticker-item';
+    s.innerHTML = `<span class="dot">◆</span>${t}`;
+    ticker.appendChild(s);
+  });
+}
+
+function setLang(lang) {
+  if (lang === currentLang) return;
+  currentLang = lang;
+  localStorage.setItem('avsec_lang', lang);
+  applyLang(lang);
+}
+
+function applyLang(lang) {
+  // Toggle button states
+  document.getElementById('btnES').classList.toggle('active', lang === 'es');
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+
+  // Update html lang attribute
+  document.documentElement.lang = lang === 'es' ? 'es' : 'en';
+
+  // Animate all translatable elements
+  const els = document.querySelectorAll('[data-es][data-en]');
+  els.forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(6px)';
+  });
+
+  setTimeout(() => {
+    els.forEach(el => {
+      const text = lang === 'es' ? el.dataset.es : el.dataset.en;
+      if (text !== undefined) {
+        // Preserve innerHTML for elements with strong tags
+        if (text.includes('<strong>') || text.includes('<span')) {
+          el.innerHTML = text;
+        } else {
+          el.textContent = text;
+        }
+      }
+      el.style.opacity = '';
+      el.style.transform = '';
+      el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    });
+
+    // Rebuild ticker in new language
+    buildTicker(lang);
+  }, 180);
+}
+
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+function animCursor() {
+  cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+  rx += (mx - rx) * 0.14; ry += (my - ry) * 0.14;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.style.width = '20px'; cursor.style.height = '20px'; ring.style.width = '50px'; ring.style.height = '50px'; });
+  el.addEventListener('mouseleave', () => { cursor.style.width = '12px'; cursor.style.height = '12px'; ring.style.width = '36px'; ring.style.height = '36px'; });
+});
+
+// RUNWAY LINES
+const rb = document.getElementById('runwayBg');
+[20, 40, 60, 80].forEach(p => {
+  const l = document.createElement('div');
+  l.className = 'runway-line rl-h'; l.style.top = p + '%';
+  l.style.animationDelay = (p * 0.08) + 's'; rb.appendChild(l);
+});
+[20, 40, 60, 80].forEach(p => {
+  const l = document.createElement('div');
+  l.className = 'runway-line rl-v'; l.style.left = p + '%';
+  l.style.animationDelay = (p * 0.05) + 's'; rb.appendChild(l);
+});
+
+// NAV SCROLL
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// TICKER — initial build
+buildTicker(currentLang);
+
+// COUNTERS
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  let count = 0;
+  const step = Math.max(1, Math.floor(target / 40));
+  const id = setInterval(() => {
+    count = Math.min(count + step, target);
+    el.textContent = count + (target >= 100 ? '%' : '');
+    if (count >= target) clearInterval(id);
+  }, 30);
+}
+
+// INTERSECTION OBSERVER
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      e.target.querySelectorAll('[data-target]').forEach(animateCounter);
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal, .airport-step, .feature-card, .zone-card, .comp-card, .ocr-demo').forEach(el => io.observe(el));
+
+// Hero counters
+const heroCounters = document.querySelectorAll('.stat-num');
+const heroIO = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { heroCounters.forEach(animateCounter); heroIO.disconnect(); }
+  });
+}, { threshold: 0.5 });
+if (heroCounters.length) heroIO.observe(heroCounters[0]);
+
+// Stagger delays
+document.querySelectorAll('.feature-card').forEach((c, i) => c.style.transitionDelay = (i * 0.08) + 's');
+document.querySelectorAll('.zone-card').forEach((c, i) => c.style.transitionDelay = (i * 0.06) + 's');
+document.querySelectorAll('.comp-card').forEach((c, i) => c.style.transitionDelay = (i * 0.1) + 's');
+
+// OCR DEMO ANIMATION
+const ocrData = {
+  nombre: ['Carlos Ulate M.', 'Ana Rodríguez V.', 'Marco Jiménez L.'],
+  cedula: ['1-0234-5678', '3-0456-7890', '2-0567-8901'],
+  empresa: ['SANSA Airlines', 'GroundCo CR', 'AeroRamp SJO'],
+  vigencia: ['15/08/2027', '01/03/2026', '22/11/2026'],
+  num: ['95279', '81344', '72105'],
+  acceso: ['Zonas 2-5', 'Zona 3 · VERDE', 'Zonas 1-6'],
+  estado: { es: ['✅ VIGENTE', '⚠ PRÓXIMA', '✅ VIGENTE'], en: ['✅ ACTIVE', '⚠ EXPIRING', '✅ ACTIVE'] },
+  estadoClass: ['green', 'amber', 'green']
+};
+let ocrIdx = 0;
+function cycleOCR() {
+  const fields = ['nombre','cedula','empresa','vigencia','num','acceso','estado'];
+  fields.forEach(f => {
+    const el = document.getElementById('ocr' + f.charAt(0).toUpperCase() + f.slice(1));
+    if (!el) return;
+    el.style.opacity = '0';
+    setTimeout(() => {
+      if (f === 'estado') {
+        const stateArr = ocrData.estado[currentLang] || ocrData.estado.es;
+        el.textContent = stateArr[ocrIdx % stateArr.length];
+        el.className = 'ocr-val ' + ocrData.estadoClass[ocrIdx % ocrData.estadoClass.length];
+      } else {
+        el.textContent = ocrData[f][ocrIdx % ocrData[f].length];
+      }
+      el.style.opacity = '1'; el.style.transition = 'opacity 0.4s';
+    }, 200);
+  });
+  ocrIdx++;
+}
+setTimeout(() => { cycleOCR(); setInterval(cycleOCR, 3500); }, 1500);
+
+// VIDEO
+function loadVideo() {
+  alert('Replace the URL in the loadVideo() function with your YouTube embed URL.');
+}
+
+// PARALLAX
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  const aircraft = document.querySelector('.hero-aircraft');
+  if (aircraft) aircraft.style.transform = `translateY(calc(-50% + ${y * 0.25}px))`;
+});
+
+// Apply saved language on load
+if (currentLang === 'en') {
+  document.getElementById('btnES').classList.remove('active');
+  document.getElementById('btnEN').classList.add('active');
+  applyLang('en');
+}
+</script>
+</body>
+</html>
