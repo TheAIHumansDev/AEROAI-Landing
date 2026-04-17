@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVSEC AI — Calculadora de Planes y Proforma</title>
+<meta name="description" content="Dimensiona el costo de tu plataforma AVSEC AI según tus estaciones, usuarios y almacenamiento. Genera tu proforma en segundos.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ── DESIGN TOKENS ──────────────────────────────────────────── */
+:root{
+  --bg:#F7F8FC;
+  --bg2:#FFFFFF;
+  --bg3:#EEF1FA;
+  --navy:#07142B;
+  --navy2:#0D1F4F;
+  --ink:#1A2140;
+  --muted:#5B6583;
+  --border:#E2E7F4;
+  --blue:#1A56FF;
+  --blue-soft:#E8EEFF;
+  --blue-mid:rgba(26,86,255,.12);
+  --amber:#F0900C;
+  --amber-soft:#FEF3E3;
+  --green:#0A8C52;
+  --green-soft:#E4F7EE;
+  --red:#DC1F1F;
+  --purple:#6B3FE7;
+  --purple-soft:#F0EBFF;
+  --violet:#7C3AED;
+  --violet-soft:#EDE9FF;
+  --teal:#0891B2;
+  --teal-soft:#E0F5FB;
+  --shadow-sm:0 1px 4px rgba(0,0,0,.07),0 2px 8px rgba(0,0,0,.04);
+  --shadow:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.05);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.10),0 4px 12px rgba(0,0,0,.06);
+  --shadow-xl:0 24px 64px rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.06);
+  --r:10px;--r-lg:16px;--r-xl:22px;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --avsec:#1A56FF;--avsec-soft:#E8EEFF;
+  --ground:#F0900C;--ground-soft:#FEF3E3;
+  --prm:#0A8C52;--prm-soft:#E4F7EE;
+  --meta:#7C3AED;--meta-soft:#EDE9FF;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);overflow-x:hidden;cursor:none;line-height:1.6;min-height:100vh}
+
+/* ── CURSOR ─────────────────────────────────────────────────── */
+#cur{position:fixed;width:9px;height:9px;background:var(--blue);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:multiply}
+#cur2{position:fixed;width:32px;height:32px;border:1.5px solid rgba(26,86,255,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all .14s ease;opacity:.75}
+body.hov #cur{width:18px;height:18px;background:var(--amber)}
+body.hov #cur2{width:46px;height:46px;border-color:rgba(240,144,12,.4)}
+
+/* ── NAV ────────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;height:62px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 5vw;
+  background:rgba(247,248,252,.92);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:9px;text-decoration:none;font-weight:800;font-size:1.2rem;letter-spacing:-.04em;color:var(--navy);cursor:none}
+.nav-logo em{color:var(--blue);font-style:normal}
+.logo-tag{font-family:var(--mono);font-size:.48rem;letter-spacing:.14em;background:var(--blue);color:#fff;padding:3px 7px;border-radius:4px;text-transform:uppercase}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-back{font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px;cursor:none;transition:color .2s}
+.nav-back:hover{color:var(--blue)}
+
+/* Lang toggle in nav */
+.lt{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;height:32px}
+.lb{padding:0 11px;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;background:transparent;border:none;color:var(--muted);cursor:none;transition:all .2s;text-transform:uppercase;font-weight:700}
+.lb.on{background:var(--blue);color:#fff}
+.ls{width:1px;background:var(--border)}
+
+/* ── HERO ───────────────────────────────────────────────────── */
+#hero{
+  padding:100px 5vw 60px;text-align:center;
+  background:linear-gradient(160deg,#FFFFFF 0%,#F0F4FF 50%,#E8EDFF 100%);
+  position:relative;overflow:hidden;
+}
+#hero::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(26,86,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(26,86,255,.05) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black,transparent);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black,transparent);
+}
+.hero-tag{font-family:var(--mono);font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);background:var(--blue-soft);border:1px solid rgba(26,86,255,.2);padding:6px 14px;border-radius:6px;display:inline-block;margin-bottom:22px;animation:up .8s ease both}
+.hero-h1{font-weight:800;font-size:clamp(2.2rem,5vw,4rem);line-height:.97;letter-spacing:-.05em;margin-bottom:18px;animation:up .9s .1s ease both}
+.hero-h1 .blue{color:var(--blue)}
+.hero-sub{font-size:1.05rem;color:var(--muted);line-height:1.75;max-width:580px;margin:0 auto 12px;animation:up .9s .2s ease both}
+.hero-note{font-family:var(--mono);font-size:.68rem;color:var(--muted);letter-spacing:.08em;animation:up .9s .3s ease both}
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ── MAIN LAYOUT ────────────────────────────────────────────── */
+.calc-wrap{max-width:1220px;margin:0 auto;padding:60px 5vw 100px;display:grid;grid-template-columns:1fr 430px;gap:32px;align-items:start}
+
+/* ── CALCULATOR PANEL ───────────────────────────────────────── */
+.calc-panel{display:flex;flex-direction:column;gap:24px}
+
+/* Platform selector */
+.plat-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ps-card{
+  background:var(--bg2);border:2px solid var(--border);border-radius:var(--r-lg);
+  padding:18px 12px;cursor:none;transition:all .25s;position:relative;
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;
+  user-select:none;
+}
+.ps-card:hover{border-color:var(--blue);box-shadow:var(--shadow)}
+.ps-card.active{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 1px var(--blue),var(--shadow)}
+.ps-card.active.ground-card{border-color:var(--ground);background:var(--ground-soft);box-shadow:0 0 0 1px var(--ground)}
+.ps-card.active.prm-card{border-color:var(--prm);background:var(--prm-soft);box-shadow:0 0 0 1px var(--prm)}
+.ps-card.active.meta-card{border-color:var(--meta);background:var(--meta-soft);box-shadow:0 0 0 1px var(--meta)}
+.ps-emoji{font-size:1.7rem}
+.ps-name{font-weight:700;font-size:.8rem;letter-spacing:-.02em;line-height:1.3}
+.ps-sub{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ps-check{
+  position:absolute;top:9px;right:9px;width:18px;height:18px;
+  border-radius:50%;border:2px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:.55rem;
+  transition:all .2s;
+}
+.ps-card.active .ps-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.ps-card.active.ground-card .ps-check{background:var(--ground);border-color:var(--ground)}
+.ps-card.active.prm-card .ps-check{background:var(--prm);border-color:var(--prm)}
+.ps-card.active.meta-card .ps-check{background:var(--meta);border-color:var(--meta)}
+.ps-bundle-note{
+  grid-column:1/-1;background:linear-gradient(135deg,var(--purple-soft),var(--blue-soft));
+  border:1.5px solid rgba(107,63,231,.25);border-radius:var(--r);
+  padding:12px 16px;display:none;align-items:center;gap:10px;
+  font-size:.82rem;transition:all .3s;
+}
+.ps-bundle-note.show{display:flex}
+.ps-bundle-badge{background:var(--purple);color:#fff;font-family:var(--mono);font-size:.58rem;font-weight:700;letter-spacing:.1em;padding:4px 10px;border-radius:20px;white-space:nowrap}
+
+/* Calc sections */
+.calc-section{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r-xl);overflow:hidden}
+.calc-sec-header{
+  padding:16px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;background:var(--bg3);
+}
+.calc-sec-icon{font-size:1.25rem}
+.calc-sec-title{font-weight:700;font-size:.92rem;letter-spacing:-.02em}
+.calc-sec-sub{font-size:.72rem;color:var(--muted);margin-top:1px}
+.calc-sec-body{padding:22px}
+
+/* Slider rows */
+.slider-row{margin-bottom:22px}
+.slider-row:last-child{margin-bottom:0}
+.slider-label{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.sl-name{font-size:.84rem;font-weight:600;letter-spacing:-.01em}
+.sl-val{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--blue)}
+.sl-val.ground{color:var(--ground)}
+.sl-val.prm{color:var(--prm)}
+.sl-val.meta{color:var(--meta)}
+.sl-desc{font-size:.7rem;color:var(--muted);margin-bottom:8px}
+
+input[type=range]{
+  -webkit-appearance:none;appearance:none;
+  width:100%;height:5px;border-radius:3px;
+  background:var(--border);outline:none;cursor:none;
+  transition:background .2s;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--blue);border:3px solid #fff;
+  box-shadow:0 2px 8px rgba(26,86,255,.4);
+  cursor:none;transition:transform .15s,box-shadow .15s;
+}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 4px 16px rgba(26,86,255,.5)}
+input[type=range].ground-range::-webkit-slider-thumb{background:var(--ground);box-shadow:0 2px 8px rgba(240,144,12,.4)}
+input[type=range].prm-range::-webkit-slider-thumb{background:var(--prm);box-shadow:0 2px 8px rgba(10,140,82,.4)}
+input[type=range].meta-range::-webkit-slider-thumb{background:var(--meta);box-shadow:0 2px 8px rgba(124,58,237,.4)}
+.slider-marks{display:flex;justify-content:space-between;margin-top:5px}
+.sm{font-family:var(--mono);font-size:.5rem;color:var(--muted);letter-spacing:.06em}
+
+/* Storage options */
+.storage-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.st-opt{
+  border:1.5px solid var(--border);border-radius:var(--r);padding:11px 8px;
+  text-align:center;cursor:none;transition:all .2s;background:var(--bg2);
+}
+.st-opt:hover{border-color:var(--blue)}
+.st-opt.active{border-color:var(--blue);background:var(--blue-soft)}
+.st-opt-val{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--navy);display:block}
+.st-opt-label{font-size:.62rem;color:var(--muted);margin-top:2px}
+.st-opt-price{font-family:var(--mono);font-size:.58rem;color:var(--blue);margin-top:4px;font-weight:700}
+
+/* ── CHECKPOINTS SECTION ──────────────────────────────────── */
+.cp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cp-card{
+  border:1.5px solid var(--border);border-radius:var(--r-lg);padding:16px 14px;
+  cursor:none;transition:all .25s;background:var(--bg2);position:relative;
+  display:flex;flex-direction:column;gap:6px;
+}
+.cp-card:hover{border-color:var(--teal);box-shadow:var(--shadow-sm)}
+.cp-card.active{border-color:var(--teal);background:var(--teal-soft);box-shadow:0 0 0 1px var(--teal)}
+.cp-check{
+  position:absolute;top:9px;right:9px;width:16px;height:16px;
+  border-radius:4px;border:2px solid var(--border);background:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:.52rem;color:transparent;
+  transition:all .2s;
+}
+.cp-card.active .cp-check{background:var(--teal);border-color:var(--teal);color:#fff}
+.cp-emoji{font-size:1.4rem}
+.cp-name{font-weight:700;font-size:.82rem;letter-spacing:-.02em}
+.cp-detail{font-size:.68rem;color:var(--muted);line-height:1.45}
+.cp-price{font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--teal)}
+
+/* ── PROFORMA PANEL ─────────────────────────────────────────── */
+.proforma-panel{
+  background:var(--navy);border-radius:var(--r-xl);padding:26px;
+  position:sticky;top:80px;
+  box-shadow:var(--shadow-xl);
+  font-family:var(--mono);
+}
+.pf-header{margin-bottom:20px}
+.pf-title{font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px}
+.pf-org{font-weight:700;font-size:1.05rem;color:#fff;letter-spacing:-.03em;font-family:var(--font)}
+.pf-date{font-size:.6rem;color:rgba(255,255,255,.3);margin-top:3px}
+.pf-ref{display:inline-block;background:rgba(26,86,255,.2);border:1px solid rgba(26,86,255,.35);color:rgba(100,153,255,.9);font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;padding:3px 9px;border-radius:4px;margin-top:8px}
+
+.pf-divider{height:1px;background:rgba(255,255,255,.07);margin:16px 0}
+
+.pf-lines{}
+.pf-line{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);gap:10px;
+  opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;
+}
+.pf-line.show{opacity:1;transform:none}
+.pf-line.inactive{opacity:.22}
+.pf-line-left{}
+.pf-line-name{font-size:.7rem;color:#fff;font-weight:500;line-height:1.4}
+.pf-line-detail{font-size:.56rem;color:rgba(255,255,255,.3);margin-top:2px;line-height:1.4}
+.pf-line-price{font-size:.8rem;font-weight:700;color:#fff;white-space:nowrap;text-align:right}
+.pf-line-price.inactive-price{color:rgba(255,255,255,.22)}
+
+.pf-discount{
+  background:rgba(107,63,231,.2);border:1px solid rgba(107,63,231,.4);
+  border-radius:8px;padding:9px 12px;margin:12px 0;
+  display:none;align-items:center;gap:8px;
+}
+.pf-discount.show{display:flex}
+.pf-discount-icon{font-size:.9rem}
+.pf-discount-text{font-size:.64rem;color:rgba(255,255,255,.7);line-height:1.4}
+.pf-discount-val{margin-left:auto;font-size:.8rem;font-weight:700;color:#A78BFA;white-space:nowrap}
+
+.pf-totals{padding-top:14px}
+.pf-subtotal{display:flex;justify-content:space-between;font-size:.65rem;color:rgba(255,255,255,.4);margin-bottom:5px}
+.pf-subtotal span:last-child{color:rgba(255,255,255,.6)}
+.pf-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)}
+.pf-total-label{font-size:.68rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.14em}
+.pf-total-val{font-family:var(--font);font-weight:800;font-size:1.9rem;letter-spacing:-.04em;color:#fff;line-height:1}
+.pf-total-period{font-size:.56rem;color:rgba(255,255,255,.35);margin-top:3px;text-align:right}
+
+.pf-billing-toggle{display:flex;gap:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;margin-bottom:18px}
+.pf-tb{flex:1;padding:7px 0;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:transparent;border:none;color:rgba(255,255,255,.4);cursor:none;transition:all .22s;text-align:center}
+.pf-tb.on{background:var(--blue);color:#fff}
+
+.pf-ctas{margin-top:18px;display:flex;flex-direction:column;gap:9px}
+.pf-btn{display:block;width:100%;padding:12px;border-radius:10px;font-family:var(--font);font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;text-decoration:none;border:none;cursor:none;transition:all .25s}
+.pf-btn.primary{background:var(--blue);color:#fff;box-shadow:0 4px 18px rgba(26,86,255,.4)}
+.pf-btn.primary:hover{background:#0040D4;box-shadow:0 8px 28px rgba(26,86,255,.5);transform:translateY(-1px)}
+.pf-btn.ghost{background:transparent;color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.12)}
+.pf-btn.ghost:hover{background:rgba(255,255,255,.06);color:#fff;border-color:rgba(255,255,255,.25)}
+.pf-guarantee{text-align:center;font-size:.57rem;color:rgba(255,255,255,.22);margin-top:10px;line-height:1.5;letter-spacing:.04em}
+
+/* ── COMPARISON TABLE ───────────────────────────────────────── */
+#compare{padding:60px 5vw;background:var(--bg2)}
+.compare-inner{max-width:1100px;margin:0 auto}
+.comp-header{text-align:center;margin-bottom:50px}
+.comp-tag{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--blue);display:block;margin-bottom:12px}
+.comp-h{font-weight:800;font-size:clamp(1.8rem,3.5vw,2.8rem);letter-spacing:-.045em;line-height:1}
+.comp-h .hi{color:var(--blue)}
+
+.comp-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow-lg)}
+.comp-table th{background:var(--navy);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;padding:14px 16px;text-align:left;font-weight:500}
+.comp-table th.blue-h{color:#fff;background:var(--blue)}
+.comp-table th.amber-h{color:#fff;background:var(--ground)}
+.comp-table th.green-h{color:#fff;background:var(--prm)}
+.comp-table th.meta-h{color:#fff;background:var(--meta)}
+.comp-table th.bundle-h{background:var(--purple);color:#fff}
+.comp-table td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:.81rem;background:var(--bg2)}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table tr:hover td{background:var(--bg3)}
+.comp-table td:first-child{font-weight:600;color:var(--navy)}
+.check{color:var(--green);font-weight:700}
+.dash{color:var(--border);font-size:1.2rem}
+.bundle-col{background:var(--purple-soft)!important;font-weight:700;color:var(--purple)}
+.meta-col{background:var(--violet-soft)!important;font-weight:700;color:var(--meta)}
+
+/* ── FOOTER ─────────────────────────────────────────────────── */
+.page-footer{background:var(--navy);padding:36px 5vw;text-align:center}
+.page-footer p{font-family:var(--mono);font-size:.62rem;color:rgba(255,255,255,.22);letter-spacing:.1em;text-transform:uppercase;line-height:1.8}
+.page-footer a{color:rgba(100,153,255,.7);text-decoration:none;cursor:none}
+.page-footer a:hover{color:var(--blue)}
+
+/* ── EXTRA ITEMS ──────────────────────────────────────────── */
+.extra-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r);cursor:none;transition:all .2s;background:var(--bg2)}
+.extra-item.active{border-color:var(--blue);background:var(--blue-soft)}
+.extra-box{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--bg2);font-size:.55rem;color:transparent}
+.extra-item.active .extra-box{background:var(--blue);border-color:var(--blue);color:#fff}
+.extra-title{font-size:.83rem;font-weight:700}
+.extra-desc{font-size:.7rem;color:var(--muted)}
+.extra-price{font-family:var(--mono);font-size:.75rem;font-weight:700;color:var(--blue);white-space:nowrap;margin-left:auto}
+
+/* ── SECTION DIVIDER ─────────────────────────────────────── */
+.sec-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:4px;margin-bottom:14px}
+
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media(max-width:1100px){
+  .calc-wrap{grid-template-columns:1fr;gap:24px}
+  .proforma-panel{position:static;top:auto}
+}
+@media(max-width:760px){
+  .plat-selector{grid-template-columns:1fr 1fr}
+  .cp-grid{grid-template-columns:1fr}
+  .storage-opts{grid-template-columns:1fr 1fr 1fr}
+  .comp-table{font-size:.72rem}
+  .comp-table td,.comp-table th{padding:9px 10px}
+}
+@media(max-width:480px){
+  .plat-selector{grid-template-columns:1fr 1fr}
+  .storage-opts{grid-template-columns:1fr 1fr}
+  nav{padding:0 4vw}
+}
+</style>
+
+<!-- Google tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NHE2B8CJ0L"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-NHE2B8CJ0L');</script>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur2"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">AERO<em>AI</em><span class="logo-tag">v4</span></a>
+  <div class="nav-right">
+    <div class="lt">
+      <button class="lb on" id="btnES" onclick="setLang('es')">ES</button>
+      <div class="ls"></div>
+      <button class="lb" id="btnEN" onclick="setLang('en')">EN</button>
+    </div>
+    <a href="index.html" class="nav-back" id="nav-back-lnk">← <span data-es="Volver al inicio" data-en="Back to home">Volver al inicio</span></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-tag" data-es="// Calculadora de Planes · Proforma Instantánea" data-en="// Plan Calculator · Instant Quote">// Calculadora de Planes · Proforma Instantánea</div>
+  <h1 class="hero-h1"><span data-es="Dimensiona tu" data-en="Size your">Dimensiona tu</span> <span class="blue" data-es="inversión" data-en="investment">inversión</span><br><span data-es="en segundos" data-en="in seconds">en segundos</span></h1>
+  <p class="hero-sub" data-es="Selecciona las plataformas que necesitas, ajusta estaciones, usuarios y almacenamiento — y genera tu proforma personalizada al instante." data-en="Select the platforms you need, adjust stations, users and storage — and generate your personalized quote instantly.">Selecciona las plataformas que necesitas, ajusta estaciones, usuarios y almacenamiento — y genera tu proforma personalizada al instante.</p>
+  <p class="hero-note" data-es="Los precios son referenciales · La proforma final se confirma con el equipo" data-en="Prices are indicative · Final quote confirmed with the team">Los precios son referenciales · La proforma final se confirma con el equipo</p>
+</section>
+
+<!-- MAIN CALCULATOR -->
+<div class="calc-wrap">
+
+  <!-- LEFT PANEL -->
+  <div class="calc-panel">
+
+    <!-- 1. PLATFORM SELECTOR -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">🧩</span>
+        <div>
+          <div class="calc-sec-title" data-es="Selecciona tus plataformas" data-en="Select your platforms">Selecciona tus plataformas</div>
+          <div class="calc-sec-sub" data-es="Elige una o varias — el bundle tiene 20% de descuento" data-en="Choose one or more — the bundle gets a 20% discount">Elige una o varias — el bundle tiene 20% de descuento</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+        <div class="plat-selector">
+
+          <div class="ps-card active" id="card-avsec" onclick="togglePlat('avsec')">
+            <div class="ps-check" id="chk-avsec" style="color:#fff;background:var(--blue);border-color:var(--blue)">✓</div>
+            <span class="ps-emoji">🛡️</span>
+            <div class="ps-name">AVSEC Platform</div>
+            <div class="ps-sub" data-es="Seguridad · IA" data-en="Security · AI">Seguridad · IA</div>
+          </div>
+
+          <div class="ps-card ground-card" id="card-ground" onclick="togglePlat('ground')">
+            <div class="ps-check" id="chk-ground">✓</div>
+            <span class="ps-emoji">🔧</span>
+            <div class="ps-name">Ground Handling</div>
+            <div class="ps-sub" data-es="Rampa · SLA IA" data-en="Ramp · SLA AI">Rampa · SLA IA</div>
+          </div>
+
+          <div class="ps-card prm-card" id="card-prm" onclick="togglePlat('prm')">
+            <div class="ps-check" id="chk-prm">✓</div>
+            <span class="ps-emoji">♿</span>
+            <div class="ps-name">Asistencia PRM</div>
+            <div class="ps-sub" data-es="Sillas · IATA" data-en="Wheelchairs · IATA">Sillas · IATA</div>
+          </div>
+
+          <div class="ps-card meta-card" id="card-meta" onclick="togglePlat('meta')">
+            <div class="ps-check" id="chk-meta">✓</div>
+            <span class="ps-emoji">🤖</span>
+            <div class="ps-name">MetaHuman IA</div>
+            <div class="ps-sub" data-es="Agente · Voz" data-en="Agent · Voice">Agente · Voz</div>
+          </div>
+
+          <div class="ps-bundle-note" id="bundleNote">
+            <span style="font-size:1.05rem">🎉</span>
+            <div style="flex:1;font-size:.78rem;color:var(--ink)">
+              <strong data-es="¡Bundle activo!" data-en="Bundle active!">¡Bundle activo!</strong> <span data-es="Tienes 3 o más plataformas." data-en="You have 3 or more platforms.">Tienes 3 o más plataformas.</span><br>
+              <span style="color:var(--muted);font-size:.72rem" data-es="Se aplica un 20% de descuento sobre el total de plataformas." data-en="A 20% discount applies to the total platform cost.">Se aplica un <strong style="color:var(--purple)">20% de descuento</strong> sobre el total.</span>
+            </div>
+            <span class="ps-bundle-badge">−20%</span>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CHECKPOINTS ADD-ONS -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">📍</span>
+        <div>
+          <div class="calc-sec-title" data-es="Checkpoints operacionales" data-en="Operational checkpoints">Checkpoints operacionales</div>
+          <div class="calc-sec-sub" data-es="Selecciona las zonas que necesitas cubrir — se suman al precio base" data-en="Select the zones you need to cover — added to base price">Selecciona las zonas que necesitas cubrir — se suman al precio base</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+        <div class="cp-grid">
+
+          <div class="cp-card" id="cp-checkin" onclick="toggleCheckpoint('checkin')">
+            <div class="cp-check" id="cpchk-checkin">✓</div>
+            <span class="cp-emoji">🎫</span>
+            <div class="cp-name" data-es="Check-in" data-en="Check-in">Check-in</div>
+            <div class="cp-detail" data-es="Módulo de verificación en counters y quioscos de check-in. Validación de documentos y abordaje." data-en="Verification module at counters and check-in kiosks. Document and boarding validation.">Counters y quioscos · validación de documentos y abordaje</div>
+            <div class="cp-price">+$45/est./mes</div>
+          </div>
+
+          <div class="cp-card" id="cp-gate" onclick="toggleCheckpoint('gate')">
+            <div class="cp-check" id="cpchk-gate">✓</div>
+            <span class="cp-emoji">🚪</span>
+            <div class="cp-name" data-es="Puertas de Embarque" data-en="Boarding Gates">Puertas de Embarque</div>
+            <div class="cp-detail" data-es="Control de acceso IA en puertas con lectura de credenciales, boarding pass y riesgo de pasajero." data-en="AI access control at gates with credential reading, boarding pass and passenger risk scoring.">Control IA en puertas · boarding pass + risk score</div>
+            <div class="cp-price">+$55/est./mes</div>
+          </div>
+
+          <div class="cp-card" id="cp-vip" onclick="toggleCheckpoint('vip')">
+            <div class="cp-check" id="cpchk-vip">✓</div>
+            <span class="cp-emoji">💎</span>
+            <div class="cp-name" data-es="Salas VIP / Lounges" data-en="VIP Lounges">Salas VIP / Lounges</div>
+            <div class="cp-detail" data-es="Verificación de acceso a salones ejecutivos. Control de elegibilidad, aforo y tiempo de permanencia." data-en="Executive lounge access verification. Eligibility, capacity and stay-time control.">Salones ejecutivos · elegibilidad, aforo y permanencia</div>
+            <div class="cp-price">+$35/est./mes</div>
+          </div>
+
+        </div>
+        <p style="font-size:.7rem;color:var(--muted);margin-top:14px;line-height:1.55">
+          <span data-es="💡 Los checkpoints se multiplican por el número de estaciones. Incluyen Vision AI, firma digital y reportes automáticos." data-en="💡 Checkpoints are multiplied by the number of stations. They include Vision AI, digital signature and automatic reports.">💡 Los checkpoints se multiplican por el número de estaciones. Incluyen Vision AI, firma digital y reportes automáticos.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 3. ESTACIONES -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">🏢</span>
+        <div>
+          <div class="calc-sec-title" data-es="Estaciones / Terminales" data-en="Stations / Terminals">Estaciones / Terminales</div>
+          <div class="calc-sec-sub" data-es="Aeropuertos, terminales o ubicaciones donde operará el sistema" data-en="Airports, terminals or locations where the system will operate">Aeropuertos, terminales o ubicaciones donde operará el sistema</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+        <div class="slider-row">
+          <div class="slider-label">
+            <span class="sl-name" data-es="Cantidad de estaciones" data-en="Number of stations">Cantidad de estaciones</span>
+            <span class="sl-val" id="stationsVal">1 estación</span>
+          </div>
+          <p class="sl-desc" data-es="Cada estación equivale a un aeropuerto, terminal o sede operativa independiente." data-en="Each station equals one independent airport, terminal or operational site.">Cada estación equivale a un aeropuerto, terminal o sede operativa independiente.</p>
+          <input type="range" min="1" max="20" value="1" id="stationsSlider" oninput="updateCalc()">
+          <div class="slider-marks">
+            <span class="sm">1</span><span class="sm">5</span><span class="sm">10</span><span class="sm">15</span><span class="sm">20</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. USUARIOS -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">👥</span>
+        <div>
+          <div class="calc-sec-title" data-es="Usuarios por estación" data-en="Users per station">Usuarios por estación</div>
+          <div class="calc-sec-sub" data-es="Oficiales, supervisores y administradores que usarán la plataforma" data-en="Officers, supervisors and administrators who will use the platform">Oficiales, supervisores y administradores que usarán la plataforma</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span class="sl-name">🛡️ <span data-es="Usuarios AVSEC" data-en="AVSEC Users">Usuarios AVSEC</span></span>
+            <span class="sl-val" id="usersAvsecVal">5 usuarios</span>
+          </div>
+          <p class="sl-desc" data-es="Oficiales de seguridad, supervisores e inspectores." data-en="Security officers, supervisors and inspectors.">Oficiales de seguridad, supervisores e inspectores.</p>
+          <input type="range" min="0" max="50" value="5" id="usersAvsec" oninput="updateCalc()">
+          <div class="slider-marks"><span class="sm">1</span><span class="sm">12</span><span class="sm">25</span><span class="sm">38</span><span class="sm">50</span></div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span class="sl-name">🔧 <span data-es="Usuarios Ground" data-en="Ground Users">Usuarios Ground</span></span>
+            <span class="sl-val ground" id="usersGroundVal">3 usuarios</span>
+          </div>
+          <p class="sl-desc" data-es="Agentes de rampa, supervisores de handling y gestores de contrato." data-en="Ramp agents, handling supervisors and contract managers.">Agentes de rampa, supervisores de handling y gestores de contrato.</p>
+          <input type="range" class="ground-range" min="0" max="50" value="3" id="usersGround" oninput="updateCalc()">
+          <div class="slider-marks"><span class="sm">1</span><span class="sm">12</span><span class="sm">25</span><span class="sm">38</span><span class="sm">50</span></div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span class="sl-name">♿ <span data-es="Usuarios PRM" data-en="PRM Users">Usuarios PRM</span></span>
+            <span class="sl-val prm" id="usersPrmVal">2 usuarios</span>
+          </div>
+          <p class="sl-desc" data-es="Asistentes PRM y coordinadores de movilidad reducida." data-en="PRM assistants and reduced mobility coordinators.">Asistentes PRM y coordinadores de movilidad reducida.</p>
+          <input type="range" class="prm-range" min="0" max="30" value="2" id="usersPrm" oninput="updateCalc()">
+          <div class="slider-marks"><span class="sm">1</span><span class="sm">8</span><span class="sm">15</span><span class="sm">22</span><span class="sm">30</span></div>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-label">
+            <span class="sl-name">🤖 <span data-es="Agentes MetaHuman" data-en="MetaHuman Agents">Agentes MetaHuman</span></span>
+            <span class="sl-val meta" id="usersMetaVal">1 agente</span>
+          </div>
+          <p class="sl-desc" data-es="Instancias del agente conversacional IA activas por estación (puede ser 1 agente para varios oficiales)." data-en="Active AI conversational agent instances per station (1 agent can serve multiple officers).">Instancias del agente IA activas por estación.</p>
+          <input type="range" class="meta-range" min="0" max="10" value="1" id="usersMeta" oninput="updateCalc()">
+          <div class="slider-marks"><span class="sm">1</span><span class="sm">3</span><span class="sm">5</span><span class="sm">7</span><span class="sm">10</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 5. ALMACENAMIENTO -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">☁️</span>
+        <div>
+          <div class="calc-sec-title" data-es="Almacenamiento en nube" data-en="Cloud storage">Almacenamiento en nube</div>
+          <div class="calc-sec-sub" data-es="Fotos de evidencia, reportes, firmas digitales y logs" data-en="Evidence photos, reports, digital signatures and logs">Fotos de evidencia, reportes, firmas digitales y logs</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+        <div class="storage-opts">
+          <div class="st-opt active" id="st-50" onclick="setStorage(50,'st-50')">
+            <span class="st-opt-val">50 GB</span>
+            <div class="st-opt-label" data-es="Básico" data-en="Basic">Básico</div>
+            <div class="st-opt-price" data-es="Incluido" data-en="Included">Incluido</div>
+          </div>
+          <div class="st-opt" id="st-200" onclick="setStorage(200,'st-200')">
+            <span class="st-opt-val">200 GB</span>
+            <div class="st-opt-label" data-es="Estándar" data-en="Standard">Estándar</div>
+            <div class="st-opt-price">+$30/mes</div>
+          </div>
+          <div class="st-opt" id="st-500" onclick="setStorage(500,'st-500')">
+            <span class="st-opt-val">500 GB</span>
+            <div class="st-opt-label" data-es="Empresarial" data-en="Business">Empresarial</div>
+            <div class="st-opt-price">+$70/mes</div>
+          </div>
+          <div class="st-opt" id="st-1000" onclick="setStorage(1000,'st-1000')">
+            <span class="st-opt-val">1 TB</span>
+            <div class="st-opt-label" data-es="Alto volumen" data-en="High volume">Alto volumen</div>
+            <div class="st-opt-price">+$130/mes</div>
+          </div>
+          <div class="st-opt" id="st-2000" onclick="setStorage(2000,'st-2000')">
+            <span class="st-opt-val">2 TB</span>
+            <div class="st-opt-label">Enterprise</div>
+            <div class="st-opt-price">+$220/mes</div>
+          </div>
+          <div class="st-opt" id="st-custom" onclick="setStorage(9999,'st-custom')">
+            <span class="st-opt-val">Custom</span>
+            <div class="st-opt-label" data-es="Ilimitado" data-en="Unlimited">Ilimitado</div>
+            <div class="st-opt-price" data-es="Cotizar" data-en="Quote">Cotizar</div>
+          </div>
+        </div>
+        <p style="font-size:.7rem;color:var(--muted);margin-top:14px;line-height:1.55">
+          <span data-es="📸 Referencia: cada vuelo genera ~45–80 MB en fotos de evidencia. Con 20 vuelos/día = ~1.2 GB/día promedio por estación." data-en="📸 Reference: each flight generates ~45–80 MB in evidence photos. With 20 flights/day = ~1.2 GB/day average per station.">📸 Referencia: cada vuelo genera ~45–80 MB en fotos de evidencia. Con 20 vuelos/día = ~1.2 GB/día promedio por estación.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 6. SERVICIOS ADICIONALES -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">⚙️</span>
+        <div>
+          <div class="calc-sec-title" data-es="Servicios adicionales" data-en="Additional services">Servicios adicionales</div>
+          <div class="calc-sec-sub" data-es="Opcionales — selecciona los que necesitas" data-en="Optional — select what you need">Opcionales — selecciona los que necesitas</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+        <div style="display:flex;flex-direction:column;gap:9px">
+
+          <div class="extra-item" id="extra-api" onclick="toggleExtra('api')">
+            <div class="extra-box" id="box-api">✓</div>
+            <div style="flex:1">
+              <div class="extra-title">🔌 <span data-es="API REST + Webhooks avanzados" data-en="REST API + Advanced Webhooks">API REST + Webhooks avanzados</span></div>
+              <div class="extra-desc" data-es="Endpoints completos para integración con sistemas propios · Hasta 100K llamadas/mes" data-en="Full endpoints for integration with your own systems · Up to 100K calls/month">Endpoints completos para integración con sistemas propios · Hasta 100K llamadas/mes</div>
+            </div>
+            <div class="extra-price">+$49/mes</div>
+          </div>
+
+          <div class="extra-item" id="extra-onboarding" onclick="toggleExtra('onboarding')">
+            <div class="extra-box" id="box-onboarding">✓</div>
+            <div style="flex:1">
+              <div class="extra-title">🎓 <span data-es="Onboarding y capacitación presencial" data-en="On-site onboarding & training">Onboarding y capacitación presencial</span></div>
+              <div class="extra-desc" data-es="Sesión de implementación y entrenamiento de oficiales en sitio (1 día)" data-en="Implementation session and on-site officer training (1 day)">Sesión de implementación y entrenamiento de oficiales en sitio (1 día)</div>
+            </div>
+            <div class="extra-price">+$299 <span data-es="único" data-en="once">único</span></div>
+          </div>
+
+          <div class="extra-item" id="extra-sla" onclick="toggleExtra('sla')">
+            <div class="extra-box" id="box-sla">✓</div>
+            <div style="flex:1">
+              <div class="extra-title">🛟 <span data-es="SLA Premium · Soporte 24/7" data-en="Premium SLA · 24/7 Support">SLA Premium · Soporte 24/7</span></div>
+              <div class="extra-desc" data-es="Respuesta garantizada en <2h · Canal dedicado WhatsApp + Email + Video" data-en="Guaranteed response in <2h · Dedicated WhatsApp + Email + Video channel">Respuesta garantizada en &lt;2h · Canal dedicado WhatsApp + Email + Video</div>
+            </div>
+            <div class="extra-price">+$89/mes</div>
+          </div>
+
+          <div class="extra-item" id="extra-reports" onclick="toggleExtra('reports')">
+            <div class="extra-box" id="box-reports">✓</div>
+            <div style="flex:1">
+              <div class="extra-title">📊 <span data-es="Reportes BI personalizados" data-en="Custom BI reports">Reportes BI personalizados</span></div>
+              <div class="extra-desc" data-es="Dashboard ejecutivo con KPIs, exportación a Excel/PDF y reportes programados" data-en="Executive dashboard with KPIs, Excel/PDF export and scheduled reports">Dashboard ejecutivo con KPIs, exportación a Excel/PDF y reportes programados</div>
+            </div>
+            <div class="extra-price">+$39/mes</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /calc-panel -->
+
+  <!-- RIGHT: PROFORMA -->
+  <div class="proforma-panel">
+
+    <div class="pf-header">
+      <div class="pf-title" data-es="// Proforma estimada" data-en="// Estimated quote">// Proforma estimada</div>
+      <div class="pf-org">AVSEC AI Platform</div>
+      <div class="pf-date" id="pfDate"></div>
+      <div class="pf-ref" id="pfRef">PRF-000000</div>
+    </div>
+
+    <div class="pf-billing-toggle">
+      <button class="pf-tb on" id="tbMensual" onclick="setBilling('mensual')" data-es="Mensual" data-en="Monthly">Mensual</button>
+      <button class="pf-tb" id="tbAnual" onclick="setBilling('anual')" data-es="Anual −17%" data-en="Annual −17%">Anual −17%</button>
+    </div>
+
+    <div class="pf-divider"></div>
+
+    <div class="pf-lines">
+
+      <div class="pf-line" id="line-avsec">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🛡️ AVSEC Platform</div>
+          <div class="pf-line-detail" id="detail-avsec">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-avsec">$0</div></div>
+      </div>
+
+      <div class="pf-line" id="line-ground">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🔧 Ground Handling IA</div>
+          <div class="pf-line-detail" id="detail-ground">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-ground">$0</div></div>
+      </div>
+
+      <div class="pf-line" id="line-prm">
+        <div class="pf-line-left">
+          <div class="pf-line-name">♿ Asistencia PRM</div>
+          <div class="pf-line-detail" id="detail-prm">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-prm">$0</div></div>
+      </div>
+
+      <div class="pf-line" id="line-meta">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🤖 MetaHuman IA</div>
+          <div class="pf-line-detail" id="detail-meta">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-meta">$0</div></div>
+      </div>
+
+      <!-- Checkpoint lines -->
+      <div class="pf-line" id="line-cp-checkin" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🎫 <span data-es="Checkpoint Check-in" data-en="Check-in Checkpoint">Checkpoint Check-in</span></div>
+          <div class="pf-line-detail" id="detail-cp-checkin">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-cp-checkin">$0</div></div>
+      </div>
+
+      <div class="pf-line" id="line-cp-gate" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🚪 <span data-es="Checkpoint Puertas" data-en="Gate Checkpoint">Checkpoint Puertas</span></div>
+          <div class="pf-line-detail" id="detail-cp-gate">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-cp-gate">$0</div></div>
+      </div>
+
+      <div class="pf-line" id="line-cp-vip" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">💎 <span data-es="Salas VIP / Lounges" data-en="VIP Lounges">Salas VIP / Lounges</span></div>
+          <div class="pf-line-detail" id="detail-cp-vip">—</div>
+        </div>
+        <div><div class="pf-line-price" id="price-cp-vip">$0</div></div>
+      </div>
+
+      <div class="pf-line show" id="line-storage">
+        <div class="pf-line-left">
+          <div class="pf-line-name">☁️ <span data-es="Almacenamiento" data-en="Storage">Almacenamiento</span></div>
+          <div class="pf-line-detail" id="detail-storage">50 GB incluido</div>
+        </div>
+        <div><div class="pf-line-price" id="price-storage">Incluido</div></div>
+      </div>
+
+      <div class="pf-line" id="line-api" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🔌 API REST + Webhooks</div>
+          <div class="pf-line-detail" data-es="100K llamadas/mes incluidas" data-en="100K calls/month included">100K llamadas/mes incluidas</div>
+        </div>
+        <div><div class="pf-line-price">$49</div></div>
+      </div>
+
+      <div class="pf-line" id="line-sla" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🛟 SLA Premium 24/7</div>
+          <div class="pf-line-detail" data-es="Respuesta <2h garantizada" data-en="Response <2h guaranteed">Respuesta &lt;2h garantizada</div>
+        </div>
+        <div><div class="pf-line-price">$89</div></div>
+      </div>
+
+      <div class="pf-line" id="line-reports" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">📊 BI + <span data-es="Reportes" data-en="Reports">Reportes</span></div>
+          <div class="pf-line-detail" data-es="KPIs + Excel/PDF programados" data-en="KPIs + scheduled Excel/PDF">KPIs + Excel/PDF programados</div>
+        </div>
+        <div><div class="pf-line-price">$39</div></div>
+      </div>
+
+      <div class="pf-line" id="line-onboarding" style="display:none">
+        <div class="pf-line-left">
+          <div class="pf-line-name">🎓 Onboarding</div>
+          <div class="pf-line-detail" data-es="Pago único · un día en sitio" data-en="One-time payment · one day on-site">Pago único · un día en sitio</div>
+        </div>
+        <div><div class="pf-line-price">$299</div></div>
+      </div>
+
+    </div>
+
+    <!-- Bundle discount -->
+    <div class="pf-discount" id="pfDiscount">
+      <span class="pf-discount-icon">🎉</span>
+      <div class="pf-discount-text" data-es="Descuento bundle<br><span style='opacity:.6;font-size:.58rem'>3+ plataformas activas</span>" data-en="Bundle discount<br><span style='opacity:.6;font-size:.58rem'>3+ active platforms</span>">Descuento bundle<br><span style="opacity:.6;font-size:.58rem">3+ plataformas activas</span></div>
+      <div class="pf-discount-val" id="discountVal">−$0</div>
+    </div>
+
+    <div class="pf-divider"></div>
+
+    <div class="pf-totals">
+      <div class="pf-subtotal"><span data-es="Subtotal plataformas" data-en="Platform subtotal">Subtotal plataformas</span><span id="pfSubtotal">$0</span></div>
+      <div class="pf-subtotal" id="rowAnnualSave" style="display:none"><span data-es="Ahorro plan anual (−17%)" data-en="Annual plan savings (−17%)">Ahorro plan anual (−17%)</span><span id="pfAnnualSave" style="color:#86EFAC">−$0</span></div>
+      <div class="pf-subtotal" id="rowOnboarding" style="display:none"><span data-es="Implementación única" data-en="One-time setup">Implementación única</span><span id="pfOnboarding">$299</span></div>
+      <div class="pf-total-row">
+        <div>
+          <div class="pf-total-label" id="totalLabel" data-es="Total mensual" data-en="Monthly total">Total mensual</div>
+          <div class="pf-total-period" id="pfPeriodNote" data-es="Facturación mensual" data-en="Monthly billing">Facturación mensual</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pf-total-val" id="pfTotal">$0</div>
+          <div style="font-family:var(--mono);font-size:.54rem;color:rgba(255,255,255,.3);margin-top:2px">/mes · USD</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-ctas">
+      <button class="pf-btn primary" onclick="requestDemo()" data-es="🚀 Solicitar esta proforma" data-en="🚀 Request this quote">🚀 Solicitar esta proforma</button>
+      <button class="pf-btn ghost" onclick="printProforma()" data-es="🖨️ Imprimir / Descargar PDF" data-en="🖨️ Print / Download PDF">🖨️ Imprimir / Descargar PDF</button>
+    </div>
+
+    <div class="pf-guarantee" data-es="✓ Sin contrato obligatorio · Sin tarjeta de crédito<br>Demo gratuita incluida · Precios en USD" data-en="✓ No mandatory contract · No credit card<br>Free demo included · Prices in USD">✓ Sin contrato obligatorio · Sin tarjeta de crédito<br>Demo gratuita incluida · Precios en USD</div>
+
+  </div><!-- /proforma-panel -->
+
+</div><!-- /calc-wrap -->
+
+<!-- COMPARISON TABLE -->
+<section id="compare">
+  <div class="compare-inner">
+    <div class="comp-header">
+      <span class="comp-tag" data-es="// Comparativa de plataformas" data-en="// Platform comparison">// Comparativa de plataformas</span>
+      <h2 class="comp-h"><span data-es="¿Qué incluye" data-en="What's included in">¿Qué incluye</span> <span class="hi" data-es="cada plan" data-en="each plan">cada plan</span>?</h2>
+    </div>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th style="width:28%" data-es="Funcionalidad" data-en="Feature">Funcionalidad</th>
+          <th class="blue-h">🛡️ AVSEC</th>
+          <th class="amber-h">🔧 Ground</th>
+          <th class="green-h">♿ PRM</th>
+          <th class="meta-h">🤖 MetaHuman</th>
+          <th class="bundle-h">💎 Bundle</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td data-es="Vision AI de credenciales" data-en="Credential Vision AI">Vision AI de credenciales</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="12 Zonas de inspección aeronave" data-en="12 Aircraft inspection zones">12 Zonas de inspección aeronave</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Vigilancia de perímetros · Geofence" data-en="Perimeter surveillance · Geofence">Vigilancia de perímetros · Geofence</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Módulo puentes · CP1–CP13" data-en="Bridge module · CP1–CP13">Módulo puentes · CP1–CP13</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Risk Engine · Verde/Ámbar/Rojo" data-en="Risk Engine · Green/Amber/Red">Risk Engine · Verde/Ámbar/Rojo</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Timer IA + predicción de retraso" data-en="AI timer + delay prediction">Timer IA + predicción de retraso</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Verificación GSE por placa" data-en="GSE verification by plate">Verificación GSE por placa</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="SLA scoring por proveedor" data-en="SLA scoring by provider">SLA scoring por proveedor</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Extracción IA de manifiesto PRM" data-en="AI PRM manifest extraction">Extracción IA de manifiesto PRM</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Asignación inteligente de personal" data-en="Intelligent staff assignment">Asignación inteligente de personal</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Reporte IATA RP 1739 automático" data-en="Automatic IATA RP 1739 report">Reporte IATA RP 1739 automático</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Consultas en lenguaje natural" data-en="Natural language queries">Consultas en lenguaje natural</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="meta-col check">✓</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Base de conocimiento AVSEC/OACI" data-en="AVSEC/ICAO knowledge base">Base de conocimiento AVSEC/OACI</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="meta-col check">✓</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Voz + Texto · Multilenguaje" data-en="Voice + Text · Multilingual">Voz + Texto · Multilenguaje</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="meta-col check">✓</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Escalación automática de incidentes" data-en="Automatic incident escalation">Escalación automática de incidentes</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="meta-col check">✓</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Checkpoint Check-in (+add-on)" data-en="Check-in Checkpoint (+add-on)">Checkpoint Check-in (+add-on)</td><td style="color:var(--teal);font-size:.75rem" data-es="Add-on" data-en="Add-on">Add-on</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td style="color:var(--teal);font-size:.75rem" class="bundle-col">Add-on</td></tr>
+        <tr><td data-es="Checkpoint Puertas de Embarque (+add-on)" data-en="Boarding Gate Checkpoint (+add-on)">Checkpoint Puertas (+add-on)</td><td style="color:var(--teal);font-size:.75rem" data-es="Add-on" data-en="Add-on">Add-on</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td style="color:var(--teal);font-size:.75rem" class="bundle-col">Add-on</td></tr>
+        <tr><td data-es="Checkpoint VIP Lounges (+add-on)" data-en="VIP Lounge Checkpoint (+add-on)">Checkpoint VIP Lounges (+add-on)</td><td style="color:var(--teal);font-size:.75rem" data-es="Add-on" data-en="Add-on">Add-on</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td style="color:var(--teal);font-size:.75rem" class="bundle-col">Add-on</td></tr>
+        <tr><td data-es="Firma digital biométrica" data-en="Biometric digital signature">Firma digital biométrica</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="dash">—</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Dashboard supervisión en vivo" data-en="Live supervision dashboard">Dashboard supervisión en vivo</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="Detección de patrones anómalos" data-en="Anomaly pattern detection">Detección de patrones anómalos</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="bundle-col check">✓</td></tr>
+        <tr><td data-es="API REST + Webhooks" data-en="REST API + Webhooks">API REST + Webhooks</td><td style="color:var(--muted);font-size:.75rem" data-es="Opcional" data-en="Optional">Opcional</td><td style="color:var(--muted);font-size:.75rem" data-es="Opcional" data-en="Optional">Opcional</td><td style="color:var(--muted);font-size:.75rem" data-es="Opcional" data-en="Optional">Opcional</td><td style="color:var(--muted);font-size:.75rem" data-es="Opcional" data-en="Optional">Opcional</td><td class="bundle-col" style="color:var(--prm);font-size:.75rem" data-es="Incluido" data-en="Included">Incluido</td></tr>
+        <tr><td style="font-weight:800;color:var(--purple)" data-es="Descuento bundle" data-en="Bundle discount">Descuento bundle</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="bundle-col" style="color:var(--purple);font-weight:800;font-size:.88rem">−20%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <p>AERO AI · <a href="index.html" data-es="Volver al inicio" data-en="Back to home">Volver al inicio</a> · <span data-es="Los precios son referenciales en USD y se confirman con el equipo comercial" data-en="Prices are indicative in USD and confirmed with the sales team">Los precios son referenciales en USD y se confirman con el equipo comercial</span> · 2026</p>
+</div>
+
+<!-- SCRIPT -->
+<script>
+/* ── CURSOR ─────────────────────────────────────────────────── */
+const $c=document.getElementById('cur'),$r=document.getElementById('cur2');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+(function tick(){$c.style.left=mx+'px';$c.style.top=my+'px';rx+=(mx-rx)*.13;ry+=(my-ry)*.13;$r.style.left=rx+'px';$r.style.top=ry+'px';requestAnimationFrame(tick)})();
+document.querySelectorAll('a,button,input,.ps-card,.st-opt,.cp-card,.extra-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+
+/* ── LANG ───────────────────────────────────────────────────── */
+let lang = localStorage.getItem('avsec_lang') || 'es';
+function setLang(l){
+  if(l===lang) return;
+  lang=l; localStorage.setItem('avsec_lang',l);
+  document.getElementById('btnES').classList.toggle('on',l==='es');
+  document.getElementById('btnEN').classList.toggle('on',l==='en');
+  document.documentElement.lang=l;
+  const els=document.querySelectorAll('[data-es][data-en]');
+  els.forEach(el=>{el.style.opacity='0'});
+  setTimeout(()=>{
+    els.forEach(el=>{
+      const t=l==='es'?el.dataset.es:el.dataset.en;
+      if(t!==undefined){
+        if(t.includes('<')){el.innerHTML=t;}else{el.textContent=t;}
+      }
+      el.style.opacity=''; el.style.transition='opacity .3s';
+    });
+    updateCalc(); // refresh display values
+  },140);
+}
+
+/* ── STATE ──────────────────────────────────────────────────── */
+const state = {
+  plats: { avsec:true, ground:false, prm:false, meta:false },
+  checkpoints: { checkin:false, gate:false, vip:false },
+  stations: 1,
+  users: { avsec:5, ground:3, prm:2, meta:1 },
+  storage: 50,
+  storageCost: 0,
+  extras: { api:false, onboarding:false, sla:false, reports:false },
+  billing: 'mensual',
+};
+
+/* BASE PRICES (monthly, per station) */
+const BASE = {
+  avsec:  { base:149, perUser:12 },
+  ground: { base:99,  perUser:10 },
+  prm:    { base:79,  perUser:9  },
+  meta:   { base:89,  perUser:29 }, // base per station + per agent
+};
+const CP_COSTS = { checkin:45, gate:55, vip:35 }; // per station/month
+const STORAGE_COSTS = { 50:0, 200:30, 500:70, 1000:130, 2000:220, 9999:0 };
+const EXTRAS_COST = { api:49, onboarding:299, sla:89, reports:39 };
+const BUNDLE_THRESHOLD = 3; // 3+ platforms = bundle discount
+const BUNDLE_DISCOUNT = 0.20;
+const ANNUAL_DISCOUNT  = 0.1667;
+
+/* ── HELPERS ────────────────────────────────────────────────── */
+function fmt(n){ return '$'+Math.round(n).toLocaleString('en-US'); }
+function fmtRef(){ return 'PRF-'+Math.floor(Date.now()/1000).toString(16).toUpperCase(); }
+function t(es,en){ return lang==='es'?es:en; }
+function uLabel(n,key){ 
+  const s = n===1;
+  if(key==='meta') return n+' '+(s ? t('agente','agent') : t('agentes','agents'));
+  return n+' '+(s ? t('usuario','user') : t('usuarios','users'));
+}
+function stLabel(n){ return n+' '+(n===1 ? t('estación','station') : t('estaciones','stations')); }
+
+/* ── PLATFORM TOGGLE ────────────────────────────────────────── */
+function togglePlat(p){
+  state.plats[p] = !state.plats[p];
+  const card=document.getElementById('card-'+p);
+  const chk=document.getElementById('chk-'+p);
+  card.classList.toggle('active',state.plats[p]);
+  if(state.plats[p]){
+    chk.style.color='#fff';
+    if(p==='avsec'){chk.style.background='var(--blue)';chk.style.borderColor='var(--blue)';}
+    else if(p==='ground'){chk.style.background='var(--ground)';chk.style.borderColor='var(--ground)';}
+    else if(p==='prm'){chk.style.background='var(--prm)';chk.style.borderColor='var(--prm)';}
+    else if(p==='meta'){chk.style.background='var(--meta)';chk.style.borderColor='var(--meta)';}
+  } else {
+    chk.style.background='var(--bg)';chk.style.borderColor='var(--border)';chk.style.color='transparent';
+  }
+  updateCalc();
+}
+
+/* ── CHECKPOINT TOGGLE ──────────────────────────────────────── */
+function toggleCheckpoint(key){
+  state.checkpoints[key]=!state.checkpoints[key];
+  const card=document.getElementById('cp-'+key);
+  const chk=document.getElementById('cpchk-'+key);
+  card.classList.toggle('active',state.checkpoints[key]);
+  if(state.checkpoints[key]){
+    chk.style.background='var(--teal)';chk.style.borderColor='var(--teal)';chk.style.color='#fff';
+  } else {
+    chk.style.background='var(--bg)';chk.style.borderColor='var(--border)';chk.style.color='transparent';
+  }
+  // Show/hide proforma line
+  const line=document.getElementById('line-cp-'+key);
+  if(line){
+    line.style.display=state.checkpoints[key]?'flex':'none';
+    if(state.checkpoints[key]) setTimeout(()=>line.classList.add('show'),50);
+    else line.classList.remove('show');
+  }
+  updateCalc();
+}
+
+/* ── STORAGE SELECT ─────────────────────────────────────────── */
+let activeStorageId='st-50';
+function setStorage(gb,id){
+  document.getElementById(activeStorageId).classList.remove('active');
+  activeStorageId=id;
+  document.getElementById(id).classList.add('active');
+  state.storage=gb;
+  state.storageCost=STORAGE_COSTS[gb]??0;
+  updateCalc();
+}
+
+/* ── BILLING ────────────────────────────────────────────────── */
+function setBilling(mode){
+  state.billing=mode;
+  document.getElementById('tbMensual').classList.toggle('on',mode==='mensual');
+  document.getElementById('tbAnual').classList.toggle('on',mode==='anual');
+  document.getElementById('tbMensual').textContent=t('Mensual','Monthly');
+  document.getElementById('tbAnual').textContent=t('Anual −17%','Annual −17%');
+  updateCalc();
+}
+
+/* ── EXTRAS ──────────────────────────────────────────────────── */
+function toggleExtra(key){
+  state.extras[key]=!state.extras[key];
+  const item=document.getElementById('extra-'+key);
+  const box=document.getElementById('box-'+key);
+  item.classList.toggle('active',state.extras[key]);
+  if(state.extras[key]){
+    box.style.background='var(--blue)';box.style.borderColor='var(--blue)';box.style.color='#fff';
+  } else {
+    box.style.background='var(--bg2)';box.style.borderColor='var(--border)';box.style.color='transparent';
+  }
+  const lineId='line-'+key;
+  if(document.getElementById(lineId)){
+    document.getElementById(lineId).style.display=state.extras[key]?'flex':'none';
+    if(state.extras[key]) setTimeout(()=>document.getElementById(lineId).classList.add('show'),50);
+    else document.getElementById(lineId).classList.remove('show');
+  }
+  updateCalc();
+}
+
+/* ── MAIN CALC ──────────────────────────────────────────────── */
+function updateCalc(){
+  // Read sliders
+  state.stations=+document.getElementById('stationsSlider').value;
+  state.users.avsec=+document.getElementById('usersAvsec').value;
+  state.users.ground=+document.getElementById('usersGround').value;
+  state.users.prm=+document.getElementById('usersPrm').value;
+  state.users.meta=+document.getElementById('usersMeta').value;
+
+  // Labels
+  document.getElementById('stationsVal').textContent=stLabel(state.stations);
+  document.getElementById('usersAvsecVal').textContent=uLabel(state.users.avsec,'avsec');
+  document.getElementById('usersGroundVal').textContent=uLabel(state.users.ground,'ground');
+  document.getElementById('usersPrmVal').textContent=uLabel(state.users.prm,'prm');
+  document.getElementById('usersMetaVal').textContent=uLabel(state.users.meta,'meta');
+
+  // Platform costs
+  let totPlats=0;
+  const platCosts={};
+  ['avsec','ground','prm','meta'].forEach(p=>{
+    if(state.plats[p]){
+      const c=(BASE[p].base+BASE[p].perUser*state.users[p])*state.stations;
+      platCosts[p]=c; totPlats+=c;
+    } else { platCosts[p]=0; }
+  });
+
+  // Bundle: 3+ platforms
+  const activePlatCount=Object.values(state.plats).filter(Boolean).length;
+  const bundleActive=activePlatCount>=BUNDLE_THRESHOLD;
+  const bundleDisc=bundleActive?Math.round(totPlats*BUNDLE_DISCOUNT):0;
+  const afterBundle=totPlats-bundleDisc;
+
+  // Checkpoint costs
+  let cpTotal=0;
+  Object.entries(state.checkpoints).forEach(([k,v])=>{
+    if(v) cpTotal+=CP_COSTS[k]*state.stations;
+  });
+
+  // Storage
+  const storageCost=state.storage===9999?0:state.storageCost;
+
+  // Extras monthly
+  let extraMonthly=0,extraOneTime=0;
+  if(state.extras.api)     extraMonthly+=49;
+  if(state.extras.sla)     extraMonthly+=89;
+  if(state.extras.reports) extraMonthly+=39;
+  if(state.extras.onboarding) extraOneTime+=299;
+
+  let monthly=afterBundle+cpTotal+storageCost+extraMonthly;
+
+  // Annual discount on recurring
+  let annualSave=0;
+  if(state.billing==='anual'){
+    annualSave=Math.round(monthly*ANNUAL_DISCOUNT);
+    monthly-=annualSave;
+  }
+
+  // ── UPDATE PROFORMA ──
+  ['avsec','ground','prm','meta'].forEach(p=>{
+    const line=document.getElementById('line-'+p);
+    const price=document.getElementById('price-'+p);
+    const detail=document.getElementById('detail-'+p);
+    line.classList.add('show');
+    if(state.plats[p]){
+      line.classList.remove('inactive');
+      price.classList.remove('inactive-price');
+      const displayCost=state.billing==='anual'
+        ?Math.round(platCosts[p]*(1-ANNUAL_DISCOUNT)):platCosts[p];
+      price.textContent=platCosts[p]>0?fmt(displayCost)+'/'+t('mes','mo'):'-';
+      const uKey=p==='meta'?'meta':p;
+      detail.textContent=stLabel(state.stations)+' · '+uLabel(state.users[p],uKey);
+    } else {
+      line.classList.add('inactive');
+      price.classList.add('inactive-price');
+      price.textContent=t('No activo','Inactive');
+      detail.textContent=t('Selecciona esta plataforma para incluirla','Select this platform to include it');
+    }
+  });
+
+  // Checkpoint lines
+  Object.entries(state.checkpoints).forEach(([k,v])=>{
+    const line=document.getElementById('line-cp-'+k);
+    if(!line) return;
+    if(v){
+      const cost=CP_COSTS[k]*state.stations;
+      const displayCost=state.billing==='anual'?Math.round(cost*(1-ANNUAL_DISCOUNT)):cost;
+      document.getElementById('price-cp-'+k).textContent=fmt(displayCost)+'/'+t('mes','mo');
+      document.getElementById('detail-cp-'+k).textContent=stLabel(state.stations)+' × $'+CP_COSTS[k]+'/'+t('est.','st.');
+    }
+  });
+
+  // Storage line
+  document.getElementById('detail-storage').textContent=
+    state.storage===9999 ? t('Almacenamiento ilimitado · cotizar','Unlimited storage · quote')
+    : `${state.storage>=1000?(state.storage/1000)+'TB':state.storage+'GB'} · ${storageCost===0?t('Incluido','Included'):'+'+fmt(storageCost)+'/'+t('mes','mo')}`;
+  document.getElementById('price-storage').textContent=
+    storageCost===0?(state.storage===9999?t('Cotizar','Quote'):t('Incluido','Included')):fmt(storageCost)+'/'+t('mes','mo');
+
+  // Bundle note
+  const bn=document.getElementById('bundleNote');
+  bn.classList.toggle('show',bundleActive);
+  const discEl=document.getElementById('pfDiscount');
+  if(bundleActive){discEl.classList.add('show');document.getElementById('discountVal').textContent='−'+fmt(bundleDisc);}
+  else {discEl.classList.remove('show');}
+
+  // Subtotal
+  document.getElementById('pfSubtotal').textContent=fmt(afterBundle+cpTotal+storageCost+extraMonthly)+'/'+t('mes','mo');
+
+  // Annual row
+  const ar=document.getElementById('rowAnnualSave');
+  ar.style.display=state.billing==='anual'?'flex':'none';
+  document.getElementById('pfAnnualSave').textContent='−'+fmt(annualSave)+'/'+t('mes','mo');
+
+  // Onboarding row
+  document.getElementById('rowOnboarding').style.display=state.extras.onboarding?'flex':'none';
+
+  // Total
+  document.getElementById('pfTotal').textContent=fmt(monthly);
+  document.getElementById('pfPeriodNote').textContent=
+    state.billing==='anual'?t('Facturación anual · pagado por adelantado','Annual billing · paid upfront'):t('Facturación mensual','Monthly billing');
+  document.getElementById('totalLabel').textContent=
+    state.billing==='anual'?t('Total mensual (anual)','Monthly total (annual)'):t('Total mensual','Monthly total');
+  document.getElementById('pfRef').textContent=fmtRef();
+
+  // Slider fills
+  function fillSlider(id,color){
+    const el=document.getElementById(id);
+    const pct=(el.value-el.min)/(el.max-el.min)*100;
+    el.style.background=`linear-gradient(to right,${color} ${pct}%,var(--border) ${pct}%)`;
+  }
+  fillSlider('stationsSlider','var(--blue)');
+  fillSlider('usersAvsec','var(--blue)');
+  fillSlider('usersGround','var(--ground)');
+  fillSlider('usersPrm','var(--prm)');
+  fillSlider('usersMeta','var(--meta)');
+}
+
+/* ── ACTIONS ────────────────────────────────────────────────── */
+function requestDemo(){
+  const plats=Object.entries(state.plats).filter(([,v])=>v).map(([k])=>k).join(', ');
+  const cps=Object.entries(state.checkpoints).filter(([,v])=>v).map(([k])=>k).join(', ')||'—';
+  const monthly=document.getElementById('pfTotal').textContent;
+  const ref=document.getElementById('pfRef').textContent;
+  const msg=encodeURIComponent(
+    `Hola, me interesa la proforma ${ref}.\n\nPlataformas: ${plats}\nCheckpoints: ${cps}\nEstaciones: ${state.stations}\nTotal estimado: ${monthly}/mes\nFacturación: ${state.billing}\n\n¿Podemos coordinar una demo?`
+  );
+  window.open(`https://wa.me/50688880000?text=${msg}`,'_blank');
+}
+function printProforma(){ window.print(); }
+
+/* ── INIT ───────────────────────────────────────────────────── */
+const now=new Date();
+const dateOpts={year:'numeric',month:'long',day:'numeric'};
+document.getElementById('pfDate').textContent=now.toLocaleDateString(lang==='es'?'es-CR':'en-US',dateOpts);
+document.getElementById('pfRef').textContent=fmtRef();
+
+// Apply initial lang from storage
+if(lang==='en'){
+  document.getElementById('btnES').classList.remove('on');
+  document.getElementById('btnEN').classList.add('on');
+  document.querySelectorAll('[data-es][data-en]').forEach(el=>{
+    const t=el.dataset.en;
+    if(t!==undefined){if(t.includes('<')){el.innerHTML=t;}else{el.textContent=t;}}
+  });
+}
+
+updateCalc();
+setTimeout(()=>{ document.querySelectorAll('.pf-line').forEach((el,i)=>{setTimeout(()=>el.classList.add('show'),i*55);}); },300);
+</script>
+
+<style media="print">
+  #cur,#cur2,nav{display:none!important}
+  body{cursor:default!important}
+  .calc-wrap{display:block;padding:0}
+  .proforma-panel{background:#07142B;color:#fff;border-radius:12px;padding:24px;margin-top:20px;box-shadow:none}
+  .calc-panel{display:none}
+  #compare{display:none}
+</style>
+
+</body>
+</html>
