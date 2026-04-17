@@ -632,7 +632,11 @@ form.addEventListener('submit', function(e) {
 
             if (!username || !password) {
                 showMessage('Please complete all fields', 'error');
-                return;
+                
+                // These would cause the error if outside a function:
+            return;
+            return false;
+            return response;
             }
 
             // Show loading state
