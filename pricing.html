@@ -421,49 +421,6 @@ input[type=range].meta-range::-webkit-slider-thumb{background:var(--meta);box-sh
       </div>
     </div>
 
-    <!-- 2. CHECKPOINTS ADD-ONS -->
-    <div class="calc-section">
-      <div class="calc-sec-header">
-        <span class="calc-sec-icon">📍</span>
-        <div>
-          <div class="calc-sec-title" data-es="Checkpoints operacionales" data-en="Operational checkpoints">Checkpoints operacionales</div>
-          <div class="calc-sec-sub" data-es="Selecciona las zonas que necesitas cubrir — se suman al precio base" data-en="Select the zones you need to cover — added to base price">Selecciona las zonas que necesitas cubrir — se suman al precio base</div>
-        </div>
-      </div>
-      <div class="calc-sec-body">
-        <div class="cp-grid">
-
-          <div class="cp-card" id="cp-checkin" onclick="toggleCheckpoint('checkin')">
-            <div class="cp-check" id="cpchk-checkin">✓</div>
-            <span class="cp-emoji">🎫</span>
-            <div class="cp-name" data-es="Check-in" data-en="Check-in">Check-in</div>
-            <div class="cp-detail" data-es="Módulo de verificación en counters y quioscos de check-in. Validación de documentos y abordaje." data-en="Verification module at counters and check-in kiosks. Document and boarding validation.">Counters y quioscos · validación de documentos y abordaje</div>
-            <div class="cp-price">+$45/est./mes</div>
-          </div>
-
-          <div class="cp-card" id="cp-gate" onclick="toggleCheckpoint('gate')">
-            <div class="cp-check" id="cpchk-gate">✓</div>
-            <span class="cp-emoji">🚪</span>
-            <div class="cp-name" data-es="Puertas de Embarque" data-en="Boarding Gates">Puertas de Embarque</div>
-            <div class="cp-detail" data-es="Control de acceso IA en puertas con lectura de credenciales, boarding pass y riesgo de pasajero." data-en="AI access control at gates with credential reading, boarding pass and passenger risk scoring.">Control IA en puertas · boarding pass + risk score</div>
-            <div class="cp-price">+$55/est./mes</div>
-          </div>
-
-          <div class="cp-card" id="cp-vip" onclick="toggleCheckpoint('vip')">
-            <div class="cp-check" id="cpchk-vip">✓</div>
-            <span class="cp-emoji">💎</span>
-            <div class="cp-name" data-es="Salas VIP / Lounges" data-en="VIP Lounges">Salas VIP / Lounges</div>
-            <div class="cp-detail" data-es="Verificación de acceso a salones ejecutivos. Control de elegibilidad, aforo y tiempo de permanencia." data-en="Executive lounge access verification. Eligibility, capacity and stay-time control.">Salones ejecutivos · elegibilidad, aforo y permanencia</div>
-            <div class="cp-price">+$35/est./mes</div>
-          </div>
-
-        </div>
-        <p style="font-size:.7rem;color:var(--muted);margin-top:14px;line-height:1.55">
-          <span data-es="💡 Los checkpoints se multiplican por el número de estaciones. Incluyen Vision AI, firma digital y reportes automáticos." data-en="💡 Checkpoints are multiplied by the number of stations. They include Vision AI, digital signature and automatic reports.">💡 Los checkpoints se multiplican por el número de estaciones. Incluyen Vision AI, firma digital y reportes automáticos.</span>
-        </p>
-      </div>
-    </div>
-
     <!-- 3. ESTACIONES -->
     <div class="calc-section">
       <div class="calc-sec-header">
@@ -642,6 +599,73 @@ input[type=range].meta-range::-webkit-slider-thumb{background:var(--meta);box-sh
       </div>
     </div>
 
+    <!-- 7. CHECKPOINTS ADD-ONS (at the end) -->
+    <div class="calc-section">
+      <div class="calc-sec-header">
+        <span class="calc-sec-icon">📍</span>
+        <div>
+          <div class="calc-sec-title" data-es="Checkpoints operacionales" data-en="Operational checkpoints">Checkpoints operacionales</div>
+          <div class="calc-sec-sub" data-es="Activa las zonas que necesitas cubrir — se agregan al total" data-en="Activate the zones you need to cover — added to your total">Activa las zonas que necesitas cubrir — se agregan al total</div>
+        </div>
+      </div>
+      <div class="calc-sec-body">
+        <div class="cp-grid">
+
+          <!-- CHECK-IN: per flight -->
+          <div class="cp-card" id="cp-checkin" onclick="toggleCheckpoint('checkin')">
+            <div class="cp-check" id="cpchk-checkin">✓</div>
+            <span class="cp-emoji">🎫</span>
+            <div class="cp-name" data-es="Check-in" data-en="Check-in">Check-in</div>
+            <div class="cp-detail" data-es="Totem con cámara IA y micrófono integrado en counters y quioscos. Validación de documentos, biometría y abordaje." data-en="AI totem with integrated camera and microphone at counters and kiosks. Document validation, biometrics and boarding.">Totem con cámara IA + micrófono · counters y quioscos</div>
+            <div class="cp-price" data-es="$0.45 / vuelo" data-en="$0.45 / flight">$0.45 / vuelo</div>
+          </div>
+
+          <!-- GATES: monthly per station -->
+          <div class="cp-card" id="cp-gate" onclick="toggleCheckpoint('gate')">
+            <div class="cp-check" id="cpchk-gate">✓</div>
+            <span class="cp-emoji">🚪</span>
+            <div class="cp-name" data-es="Puertas de Embarque" data-en="Boarding Gates">Puertas de Embarque</div>
+            <div class="cp-detail" data-es="Control de acceso IA en puertas con lectura de credenciales, boarding pass y riesgo de pasajero." data-en="AI access control at gates with credential reading, boarding pass and passenger risk scoring.">Control IA · boarding pass + risk score por puerta</div>
+            <div class="cp-price" data-es="+$55/est./mes" data-en="+$55/st./mo">+$55/est./mes</div>
+          </div>
+
+          <!-- VIP: monthly per station -->
+          <div class="cp-card" id="cp-vip" onclick="toggleCheckpoint('vip')">
+            <div class="cp-check" id="cpchk-vip">✓</div>
+            <span class="cp-emoji">💎</span>
+            <div class="cp-name" data-es="Salas VIP / Lounges" data-en="VIP Lounges">Salas VIP / Lounges</div>
+            <div class="cp-detail" data-es="Verificación de acceso a salones ejecutivos. Control de elegibilidad, aforo y tiempo de permanencia." data-en="Executive lounge access verification. Eligibility, capacity and stay-time control.">Salones ejecutivos · elegibilidad, aforo y permanencia</div>
+            <div class="cp-price" data-es="+$35/est./mes" data-en="+$35/st./mo">+$35/est./mes</div>
+          </div>
+
+        </div>
+
+        <!-- Check-in flights slider — only visible when checkin is active -->
+        <div id="checkin-flights-row" style="display:none;margin-top:18px">
+          <div style="height:1px;background:var(--border);margin-bottom:18px"></div>
+          <div class="slider-row" style="margin-bottom:0">
+            <div class="slider-label">
+              <span class="sl-name">🎫 <span data-es="Vuelos mensuales con Check-in" data-en="Monthly flights with Check-in">Vuelos mensuales con Check-in</span></span>
+              <span class="sl-val" id="checkinFlightsVal" style="color:var(--teal)">100 <span data-es="vuelos/mes" data-en="flights/mo">vuelos/mes</span></span>
+            </div>
+            <p class="sl-desc" data-es="Se cobra $0.45 por vuelo procesado en el Totem de Check-in (cámara IA + micrófono incluidos)." data-en="Charged at $0.45 per flight processed at the Check-in Totem (AI camera + microphone included).">Se cobra $0.45 por vuelo procesado en el Totem de Check-in (cámara IA + micrófono).</p>
+            <input type="range" min="10" max="3000" step="10" value="100" id="checkinFlightsSlider" oninput="updateCalc()" style="accent-color:var(--teal)">
+            <div class="slider-marks">
+              <span class="sm">10</span><span class="sm">750</span><span class="sm">1500</span><span class="sm">2250</span><span class="sm">3000</span>
+            </div>
+          </div>
+          <div style="margin-top:12px;background:var(--teal-soft);border:1px solid rgba(8,145,178,.2);border-radius:8px;padding:10px 14px;font-size:.72rem;color:var(--ink);line-height:1.55">
+            <strong style="color:var(--teal)">🖥️ <span data-es="Totem incluido:" data-en="Totem included:">Totem incluido:</span></strong>
+            <span data-es="Cámara IA frontal HD + micrófono direccional + pantalla táctil 15&quot; + lector de documentos. Instalado en counters o quioscos de self-service." data-en="HD frontal AI camera + directional microphone + 15&quot; touch screen + document reader. Installed at counters or self-service kiosks.">Cámara IA HD + micrófono direccional + pantalla táctil 15" + lector de documentos. Instalado en counters o quioscos.</span>
+          </div>
+        </div>
+
+        <p style="font-size:.7rem;color:var(--muted);margin-top:14px;line-height:1.55">
+          <span data-es="💡 Puertas y VIP: precio mensual por estación. Check-in: precio por vuelo procesado (incluye hardware Totem con cámara IA y micrófono)." data-en="💡 Gates and VIP: monthly price per station. Check-in: price per processed flight (includes Totem hardware with AI camera and microphone).">💡 Puertas y VIP: precio mensual por estación. Check-in: precio por vuelo procesado (incluye hardware Totem).</span>
+        </p>
+      </div>
+    </div>
+
   </div><!-- /calc-panel -->
 
   <!-- RIGHT: PROFORMA -->
@@ -698,8 +722,8 @@ input[type=range].meta-range::-webkit-slider-thumb{background:var(--meta);box-sh
       <!-- Checkpoint lines -->
       <div class="pf-line" id="line-cp-checkin" style="display:none">
         <div class="pf-line-left">
-          <div class="pf-line-name">🎫 <span data-es="Checkpoint Check-in" data-en="Check-in Checkpoint">Checkpoint Check-in</span></div>
-          <div class="pf-line-detail" id="detail-cp-checkin">—</div>
+          <div class="pf-line-name">🎫 <span data-es="Check-in · Totem IA" data-en="Check-in · AI Totem">Check-in · Totem IA</span></div>
+          <div class="pf-line-detail" id="detail-cp-checkin" data-es="$0.45 × vuelos/mes" data-en="$0.45 × flights/mo">$0.45 × vuelos/mes</div>
         </div>
         <div><div class="pf-line-price" id="price-cp-checkin">$0</div></div>
       </div>
@@ -888,6 +912,7 @@ function setLang(l){
 const state = {
   plats: { avsec:true, ground:false, prm:false, meta:false },
   checkpoints: { checkin:false, gate:false, vip:false },
+  checkinFlights: 100,   // monthly flights for check-in totem
   stations: 1,
   users: { avsec:5, ground:3, prm:2, meta:1 },
   storage: 50,
@@ -901,12 +926,13 @@ const BASE = {
   avsec:  { base:149, perUser:12 },
   ground: { base:99,  perUser:10 },
   prm:    { base:79,  perUser:9  },
-  meta:   { base:89,  perUser:29 }, // base per station + per agent
+  meta:   { base:89,  perUser:29 },
 };
-const CP_COSTS = { checkin:45, gate:55, vip:35 }; // per station/month
+const CHECKIN_PER_FLIGHT = 0.45;   // per flight processed at totem
+const CP_COSTS = { gate:55, vip:35 }; // monthly per station (checkin is per-flight)
 const STORAGE_COSTS = { 50:0, 200:30, 500:70, 1000:130, 2000:220, 9999:0 };
 const EXTRAS_COST = { api:49, onboarding:299, sla:89, reports:39 };
-const BUNDLE_THRESHOLD = 3; // 3+ platforms = bundle discount
+const BUNDLE_THRESHOLD = 3;
 const BUNDLE_DISCOUNT = 0.20;
 const ANNUAL_DISCOUNT  = 0.1667;
 
@@ -949,6 +975,11 @@ function toggleCheckpoint(key){
     chk.style.background='var(--teal)';chk.style.borderColor='var(--teal)';chk.style.color='#fff';
   } else {
     chk.style.background='var(--bg)';chk.style.borderColor='var(--border)';chk.style.color='transparent';
+  }
+  // Show/hide flights slider for check-in
+  if(key==='checkin'){
+    const flightsRow=document.getElementById('checkin-flights-row');
+    if(flightsRow) flightsRow.style.display=state.checkpoints.checkin?'block':'none';
   }
   // Show/hide proforma line
   const line=document.getElementById('line-cp-'+key);
@@ -1009,6 +1040,7 @@ function updateCalc(){
   state.users.ground=+document.getElementById('usersGround').value;
   state.users.prm=+document.getElementById('usersPrm').value;
   state.users.meta=+document.getElementById('usersMeta').value;
+  state.checkinFlights=+document.getElementById('checkinFlightsSlider').value;
 
   // Labels
   document.getElementById('stationsVal').textContent=stLabel(state.stations);
@@ -1016,6 +1048,9 @@ function updateCalc(){
   document.getElementById('usersGroundVal').textContent=uLabel(state.users.ground,'ground');
   document.getElementById('usersPrmVal').textContent=uLabel(state.users.prm,'prm');
   document.getElementById('usersMetaVal').textContent=uLabel(state.users.meta,'meta');
+  // Flights label
+  const flEl=document.getElementById('checkinFlightsVal');
+  if(flEl) flEl.innerHTML=state.checkinFlights.toLocaleString()+' <span data-es="vuelos/mes" data-en="flights/mo">'+t('vuelos/mes','flights/mo')+'</span>';
 
   // Platform costs
   let totPlats=0;
@@ -1034,10 +1069,16 @@ function updateCalc(){
   const afterBundle=totPlats-bundleDisc;
 
   // Checkpoint costs
-  let cpTotal=0;
-  Object.entries(state.checkpoints).forEach(([k,v])=>{
-    if(v) cpTotal+=CP_COSTS[k]*state.stations;
+  // Check-in: per flight × monthly flights (not multiplied by stations — one price per flight regardless)
+  const checkinCost = state.checkpoints.checkin
+    ? Math.round(CHECKIN_PER_FLIGHT * state.checkinFlights * 100) / 100
+    : 0;
+  // Gate + VIP: monthly per station
+  let cpMonthly=0;
+  ['gate','vip'].forEach(k=>{
+    if(state.checkpoints[k]) cpMonthly+=CP_COSTS[k]*state.stations;
   });
+  const cpTotal=checkinCost+cpMonthly;
 
   // Storage
   const storageCost=state.storage===9999?0:state.storageCost;
@@ -1080,16 +1121,21 @@ function updateCalc(){
     }
   });
 
-  // Checkpoint lines
-  Object.entries(state.checkpoints).forEach(([k,v])=>{
+  // Checkpoint lines — check-in (per flight)
+  if(state.checkpoints.checkin){
+    const displayCheckin=state.billing==='anual'?Math.round(checkinCost*(1-ANNUAL_DISCOUNT)):checkinCost;
+    document.getElementById('price-cp-checkin').textContent=fmt(displayCheckin)+'/'+t('mes','mo');
+    document.getElementById('detail-cp-checkin').textContent=
+      state.checkinFlights.toLocaleString()+' '+t('vuelos','flights')+' × $'+CHECKIN_PER_FLIGHT+'/'+t('vuelo','flight');
+  }
+  // Gate + VIP (monthly per station)
+  ['gate','vip'].forEach(k=>{
     const line=document.getElementById('line-cp-'+k);
-    if(!line) return;
-    if(v){
-      const cost=CP_COSTS[k]*state.stations;
-      const displayCost=state.billing==='anual'?Math.round(cost*(1-ANNUAL_DISCOUNT)):cost;
-      document.getElementById('price-cp-'+k).textContent=fmt(displayCost)+'/'+t('mes','mo');
-      document.getElementById('detail-cp-'+k).textContent=stLabel(state.stations)+' × $'+CP_COSTS[k]+'/'+t('est.','st.');
-    }
+    if(!line || !state.checkpoints[k]) return;
+    const cost=CP_COSTS[k]*state.stations;
+    const displayCost=state.billing==='anual'?Math.round(cost*(1-ANNUAL_DISCOUNT)):cost;
+    document.getElementById('price-cp-'+k).textContent=fmt(displayCost)+'/'+t('mes','mo');
+    document.getElementById('detail-cp-'+k).textContent=stLabel(state.stations)+' × $'+CP_COSTS[k]+'/'+t('est.','st.');
   });
 
   // Storage line
@@ -1128,6 +1174,7 @@ function updateCalc(){
   // Slider fills
   function fillSlider(id,color){
     const el=document.getElementById(id);
+    if(!el) return;
     const pct=(el.value-el.min)/(el.max-el.min)*100;
     el.style.background=`linear-gradient(to right,${color} ${pct}%,var(--border) ${pct}%)`;
   }
@@ -1136,6 +1183,7 @@ function updateCalc(){
   fillSlider('usersGround','var(--ground)');
   fillSlider('usersPrm','var(--prm)');
   fillSlider('usersMeta','var(--meta)');
+  fillSlider('checkinFlightsSlider','var(--teal)');
 }
 
 /* ── ACTIONS ────────────────────────────────────────────────── */
