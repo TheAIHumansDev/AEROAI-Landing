@@ -123,7 +123,10 @@ nav.up{box-shadow:var(--shadow);background:rgba(255,255,255,.97)}
 }
 #hero::after{
   content:'';position:absolute;inset:0;z-index:1;
-  background:linear-gradient(150deg,rgba(255,255,255,.92) 0%,rgba(242,245,255,.88) 55%,rgba(232,237,255,.85) 100%);
+  background:linear-gradient(150deg,
+    rgba(255,255,255,.65) 0%,
+    rgba(242,245,255,.60) 55%,
+    rgba(232,237,255,.58) 100%);
   pointer-events:none;
 }
 .hero-grid{
@@ -561,9 +564,11 @@ footer{background:var(--navy);padding:56px 5vw 28px;color:rgba(255,255,255,.35)}
 <section id="hero">
 
     <!-- VIDEO BACKGROUND -->
-  <video autoplay muted loop playsinline id="heroBgVideo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.18;pointer-events:none">
-    <source src="landing.mp4" type="video/mp4">
-  </video>
+<video autoplay muted loop playsinline id="heroBgVideo" 
+  style="position:absolute;inset:0;width:100%;height:100%;
+         object-fit:cover;z-index:0;opacity:.35;pointer-events:none">
+  <source src="landing.mp4" type="video/mp4">
+</video>
   
   <div class="hero-grid"></div>
   <div class="scanline"></div>
