@@ -352,6 +352,78 @@
     animation: fadeUp 0.3s ease 0.28s both;
   }
 
+  /* ── DOC ID BANNER ── */
+  .doc-id-banner {
+    background: linear-gradient(110deg, var(--navy-deep) 0%, var(--navy) 60%, #0E5A8A 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(212,175,55,0.3);
+    box-shadow: 0 6px 28px rgba(10,61,98,0.22);
+    overflow: hidden;
+    animation: fadeUp 0.35s ease 0.02s both;
+  }
+  .doc-id-banner:hover { box-shadow: 0 10px 40px rgba(10,61,98,0.32); }
+  .doc-id-header {
+    padding: 14px 24px;
+    border-bottom: 1px solid rgba(212,175,55,0.2);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .doc-id-header-icon {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: rgba(212,175,55,0.15);
+    border: 1px solid rgba(212,175,55,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .doc-id-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 600;
+    color: var(--gold); letter-spacing: 0.04em;
+  }
+  .doc-id-badge {
+    margin-left: auto;
+    background: rgba(212,175,55,0.12);
+    border: 1px solid rgba(212,175,55,0.25);
+    color: var(--gold);
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px;
+  }
+  .doc-id-body { padding: 20px 24px; }
+  .doc-id-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .doc-id-field { display: flex; flex-direction: column; gap: 6px; }
+  .doc-id-label {
+    font-size: 9px; font-weight: 600;
+    color: rgba(212,175,55,0.7);
+    text-transform: uppercase; letter-spacing: 0.14em;
+  }
+  .doc-id-value {
+    font-size: 13px; font-weight: 600;
+    color: var(--white);
+    padding: 9px 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    font-family: 'DM Sans', monospace;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .doc-id-value.gold { color: var(--gold); border-color: rgba(212,175,55,0.25); background: rgba(212,175,55,0.08); }
+  .doc-id-value.clave {
+    font-size: 10px; letter-spacing: 0.06em;
+    font-family: 'DM Sans', monospace;
+    color: rgba(255,255,255,0.75);
+    cursor: pointer; position: relative;
+    transition: background 0.15s;
+  }
+  .doc-id-value.clave:hover { background: rgba(255,255,255,0.1); }
+  .doc-id-field.span2 { grid-column: span 2; }
+
   /* ── TOAST ── */
   .toast {
     position: fixed; bottom: 28px; right: 28px;
@@ -394,9 +466,12 @@
     .fields-grid.three { grid-template-columns: 1fr 1fr; }
     .header-meta { display: none; }
     .app-header { padding: 0 20px; }
+    .doc-id-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 600px) {
     .fields-grid, .fields-grid.three { grid-template-columns: 1fr; }
+    .doc-id-grid { grid-template-columns: 1fr; }
+    .doc-id-field.span2 { grid-column: span 1; }
   }
 </style>
 </head>
@@ -433,6 +508,47 @@
 
   <!-- ══ LEFT COLUMN ══ -->
   <div class="left-col">
+
+    <!-- IDENTIFICACIÓN DEL DOCUMENTO -->
+    <div class="doc-id-banner">
+      <div class="doc-id-header">
+        <div class="doc-id-header-icon">🔖</div>
+        <span class="doc-id-title">Identificación del Documento</span>
+        <span class="doc-id-badge">Auto-generado</span>
+      </div>
+      <div class="doc-id-body">
+        <div class="doc-id-grid">
+          <div class="doc-id-field">
+            <div class="doc-id-label">Consecutivo</div>
+            <div class="doc-id-value gold" id="doc-consecutivo">AITX-000001</div>
+          </div>
+          <div class="doc-id-field">
+            <div class="doc-id-label">Número de Documento</div>
+            <div class="doc-id-value gold" id="doc-numero">FE-001-000001</div>
+          </div>
+          <div class="doc-id-field">
+            <div class="doc-id-label">Fecha</div>
+            <div class="doc-id-value" id="doc-fecha">—</div>
+          </div>
+          <div class="doc-id-field">
+            <div class="doc-id-label">Hora</div>
+            <div class="doc-id-value" id="doc-hora">—</div>
+          </div>
+          <div class="doc-id-field span2">
+            <div class="doc-id-label">Clave del Documento (50 dígitos) — clic para copiar</div>
+            <div class="doc-id-value clave" id="doc-clave" onclick="copiarClave()" title="Clic para copiar">—</div>
+          </div>
+          <div class="doc-id-field">
+            <div class="doc-id-label">Tipo de Documento</div>
+            <div class="doc-id-value">01 — Factura Electrónica</div>
+          </div>
+          <div class="doc-id-field">
+            <div class="doc-id-label">Situación</div>
+            <div class="doc-id-value" style="color:#4ADE80;">1 — Normal</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- DATOS DEL EMISOR -->
     <div class="card">
@@ -651,22 +767,73 @@
     setTimeout(() => t.classList.remove('show'), duration);
   }
 
-  /* ── TIMESTAMP ── */
-  function updateTimestamp() {
-    const now = new Date();
-    const p = n => String(n).padStart(2, '0');
-    const ts = `${now.getFullYear()}-${p(now.getMonth()+1)}-${p(now.getDate())} ${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
-    document.getElementById('h-timestamp').textContent = ts;
-  }
-  updateTimestamp();
-  setInterval(updateTimestamp, 1000);
-
-  /* ── INVOICE NUMBERING ── */
+  /* ── TIMESTAMP & DOC ID ── */
   let invoiceNumber = 1;
-  function getConsecutivo() {
-    return 'AITX-' + String(invoiceNumber).padStart(6, '0');
+
+  function pad(n, len = 2) { return String(n).padStart(len, '0'); }
+
+  function generarClave(fecha, consecutivo, cedula) {
+    // Costa Rica e-invoice 50-digit key format (simplified):
+    // [2-pais][2-dia][2-mes][4-año][12-cedula][8-consecutivo][1-situacion][8-codigo-seguridad]
+    // We generate it deterministically from available data + random security code
+    const d = fecha;
+    const pais    = '506';
+    const dia     = pad(d.getDate());
+    const mes     = pad(d.getMonth() + 1);
+    const anio    = d.getFullYear();
+    const ced     = cedula.replace(/\D/g,'').padStart(12,'0');
+    const consec  = consecutivo.padStart(20,'0');        // 20 digits: tipo+sucursal+terminal+num
+    const situacion = '1';
+    const seguridad = Math.floor(Math.random() * 99999999).toString().padStart(8,'0');
+    const raw = pais + dia + mes + anio + ced + consec + situacion + seguridad;
+    // Pad/trim to exactly 50
+    return raw.substring(0, 50).padEnd(50, '0');
   }
-  document.getElementById('h-consec').textContent = getConsecutivo();
+
+  function actualizarDocId() {
+    const now = new Date();
+    const fecha  = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const hora   = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const consNum = String(invoiceNumber).padStart(6, '0');
+    const consecutivo = 'AITX-' + consNum;
+    const numDoc = 'FE-001-' + consNum;
+    // Full consecutivo for clave: tipo(2)+sucursal(3)+terminal(5)+numero(10) = 20 digits
+    const consecClave = '01' + '001' + '00001' + String(invoiceNumber).padStart(10,'0');
+    const clave = generarClave(now, consecClave, '3102929315');
+
+    // Update doc-id card
+    document.getElementById('doc-consecutivo').textContent = consecutivo;
+    document.getElementById('doc-numero').textContent      = numDoc;
+    document.getElementById('doc-fecha').textContent       = fecha;
+    document.getElementById('doc-hora').textContent        = hora;
+    document.getElementById('doc-clave').textContent       = clave;
+
+    // Sync to header
+    document.getElementById('h-consec').textContent    = consecutivo;
+    document.getElementById('h-timestamp').textContent = fecha + ' ' + hora;
+  }
+
+  actualizarDocId();
+  setInterval(() => {
+    const now = new Date();
+    const hora = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const fecha = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    document.getElementById('doc-hora').textContent        = hora;
+    document.getElementById('h-timestamp').textContent     = fecha + ' ' + hora;
+  }, 1000);
+
+  function copiarClave() {
+    const clave = document.getElementById('doc-clave').textContent;
+    navigator.clipboard.writeText(clave).then(() => {
+      showToast('📋 Clave copiada al portapapeles.');
+    }).catch(() => {
+      showToast('⚠ No se pudo copiar. Seleccione manualmente.');
+    });
+  }
+
+  function getConsecutivo() {
+    return document.getElementById('doc-consecutivo').textContent;
+  }
 
   /* ── ADD ROW ── */
   function addRow() {
@@ -803,6 +970,8 @@
       showToast('⚠ Complete el nombre del cliente antes de continuar.');
       return;
     }
+    invoiceNumber++;
+    actualizarDocId();
     showToast('✦ Factura ' + getConsecutivo() + ' generada exitosamente.');
   }
 
