@@ -219,6 +219,8 @@
   .line-num { font-size: 11px; color: var(--gray-400); font-weight: 600; }
   .monto-cell { font-weight: 600; color: var(--navy); font-size: 12.5px; min-width: 80px; white-space: nowrap; }
   .total-cell { font-weight: 700; color: #8B6914; font-size: 12.5px; min-width: 80px; white-space: nowrap; }
+  /* print-cell: hidden on screen, shown on print via @media print */
+  .print-cell { display: none; }
   .del-btn {
     background: none; border: none; cursor: pointer;
     color: var(--gray-400); font-size: 15px;
@@ -443,20 +445,111 @@
   }
   .toast.show { transform: translateY(0); opacity: 1; }
 
-  /* ── PRINT STYLES ── */
+  /* ── PRINT HEADER / FOOTER (every page) ── */
+  .print-page-header {
+    display: none;
+  }
   @media print {
-    .app-header { position: relative; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-    .right-col .action-card, .right-col .meta-card { display: none; }
-    body { background: white; }
-    .main-wrap { grid-template-columns: 1fr; }
-    .right-col { position: static; }
-    .summary-card { page-break-inside: avoid; }
-    .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
-    .del-btn, .btn-add, .add-row-wrap { display: none; }
-    .tbl-input {
-      border: none; padding: 2px 4px;
-      font-size: 11px;
+    @page {
+      margin: 18mm 14mm 20mm 14mm;
     }
+
+    /* Show the fixed page-header on every printed page */
+    .print-page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #D4AF37;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      position: running(pageHeader);
+    }
+    .print-page-header .ph-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; font-weight: 700;
+      color: #0A3D62;
+      letter-spacing: 0.04em;
+    }
+    .print-page-header .ph-meta {
+      display: flex; gap: 24px; align-items: center;
+    }
+    .print-page-header .ph-chip {
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
+    .print-page-header .ph-chip .lbl {
+      font-size: 8px; color: #B8950E;
+      text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600;
+    }
+    .print-page-header .ph-chip .val {
+      font-size: 11px; color: #061E30; font-weight: 600;
+    }
+
+    /* Use CSS running element for repeated header */
+    @page { @top-center { content: element(pageHeader); } }
+
+    /* Screen header hidden, print-page-header shown instead */
+    .app-header { display: none !important; }
+    .toast { display: none !important; }
+
+    body { background: white !important; font-size: 11px; }
+
+    .main-wrap {
+      grid-template-columns: 1fr !important;
+      padding: 0 !important;
+      gap: 14px;
+    }
+    .right-col { position: static !important; }
+    .right-col .action-card,
+    .right-col .meta-card { display: none !important; }
+
+    /* Cards */
+    .card {
+      box-shadow: none !important;
+      border: 1px solid #CBD5E1 !important;
+      page-break-inside: avoid;
+      animation: none !important;
+    }
+    .doc-id-banner {
+      box-shadow: none !important;
+      border: 1.5px solid #D4AF37 !important;
+      page-break-inside: avoid;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .summary-card {
+      page-break-inside: avoid;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    /* Hide interactive controls */
+    .del-btn,
+    .btn-add,
+    .add-row-wrap { display: none !important; }
+
+    /* ── TABLE FIX: replace inputs with plain text spans ── */
+    /* Hide inputs, show the data-print spans */
+    .inv-table .tbl-input { display: none !important; }
+    .inv-table .print-cell {
+      display: inline !important;
+      font-size: 11px;
+      color: #1E293B;
+    }
+    .inv-table td { padding: 5px 6px; font-size: 11px; }
+    .inv-table th { font-size: 9px; padding: 7px 6px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .inv-table { min-width: unset !important; width: 100% !important; }
+    .table-wrap { overflow: visible !important; }
+
+    /* Field inputs in forms */
+    .field-input { border: none !important; background: transparent !important; box-shadow: none !important; padding: 4px 0 !important; font-size: 11px !important; }
+    .field-value { background: #F5F7FA !important; font-size: 11px !important; padding: 5px 8px !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .field-label { font-size: 8px !important; }
+
+    .card-body { padding: 12px 16px !important; }
+    .card-header { padding: 10px 16px !important; }
+    .doc-id-body { padding: 12px 16px !important; }
   }
 
   /* ── RESPONSIVE ── */
@@ -476,6 +569,21 @@
 </style>
 </head>
 <body>
+
+<!-- ══ PRINT PAGE HEADER (repeated on every printed page) ══ -->
+<div class="print-page-header" id="print-page-header">
+  <div class="ph-brand">AI Humans SRL · AITX — Factura Electrónica</div>
+  <div class="ph-meta">
+    <div class="ph-chip">
+      <span class="lbl">Consecutivo</span>
+      <span class="val" id="ph-consec">AITX-000975</span>
+    </div>
+    <div class="ph-chip">
+      <span class="lbl">Fecha y Hora</span>
+      <span class="val" id="ph-timestamp">—</span>
+    </div>
+  </div>
+</div>
 
 <!-- ══ APP HEADER ══ -->
 <header class="app-header">
@@ -768,7 +876,7 @@
   }
 
   /* ── TIMESTAMP & DOC ID ── */
-  let invoiceNumber = 1;
+  let invoiceNumber = 975;
 
   function pad(n, len = 2) { return String(n).padStart(len, '0'); }
 
@@ -811,6 +919,9 @@
     // Sync to header
     document.getElementById('h-consec').textContent    = consecutivo;
     document.getElementById('h-timestamp').textContent = fecha + ' ' + hora;
+    // Sync to print page header
+    document.getElementById('ph-consec').textContent    = consecutivo;
+    document.getElementById('ph-timestamp').textContent = fecha + ' ' + hora;
   }
 
   actualizarDocId();
@@ -818,8 +929,10 @@
     const now = new Date();
     const hora = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
     const fecha = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const ts = fecha + ' ' + hora;
     document.getElementById('doc-hora').textContent        = hora;
-    document.getElementById('h-timestamp').textContent     = fecha + ' ' + hora;
+    document.getElementById('h-timestamp').textContent     = ts;
+    document.getElementById('ph-timestamp').textContent    = ts;
   }, 1000);
 
   function copiarClave() {
@@ -845,13 +958,37 @@
     tr.style.animation = 'fadeUp 0.2s ease both';
     tr.innerHTML = `
       <td><span class="line-num">${n}</span></td>
-      <td><input class="tbl-input" placeholder="001" style="width:62px" tabindex="0"></td>
-      <td><input class="tbl-input wide" placeholder="Descripción del servicio o producto" tabindex="0"></td>
-      <td><input class="tbl-input num" type="number" value="1" min="0" step="1" style="width:62px" oninput="calcRow(this)" tabindex="0"></td>
-      <td><input class="tbl-input" value="Unid." style="width:58px" tabindex="0"></td>
-      <td><input class="tbl-input num" type="number" value="0.00" min="0" step="0.01" style="width:94px" oninput="calcRow(this)" tabindex="0"></td>
+      <td>
+        <input class="tbl-input" placeholder="001" style="width:62px" tabindex="0"
+          oninput="syncPrint(this)">
+        <span class="print-cell"></span>
+      </td>
+      <td>
+        <input class="tbl-input wide" placeholder="Descripción del servicio o producto" tabindex="0"
+          oninput="syncPrint(this)">
+        <span class="print-cell"></span>
+      </td>
+      <td>
+        <input class="tbl-input num" type="number" value="1" min="0" step="1" style="width:62px"
+          oninput="calcRow(this);syncPrint(this)" tabindex="0">
+        <span class="print-cell">1</span>
+      </td>
+      <td>
+        <input class="tbl-input" value="Unid." style="width:58px" tabindex="0"
+          oninput="syncPrint(this)">
+        <span class="print-cell">Unid.</span>
+      </td>
+      <td>
+        <input class="tbl-input num" type="number" value="0.00" min="0" step="0.01" style="width:94px"
+          oninput="calcRow(this);syncPrint(this)" tabindex="0">
+        <span class="print-cell">0.00</span>
+      </td>
       <td class="monto-cell" id="monto-${n}">$0.00</td>
-      <td><input class="tbl-input num" type="number" value="0" min="0" max="100" step="0.01" style="width:64px" oninput="calcRow(this)" tabindex="0"></td>
+      <td>
+        <input class="tbl-input num" type="number" value="0" min="0" max="100" step="0.01" style="width:64px"
+          oninput="calcRow(this);syncPrint(this)" tabindex="0">
+        <span class="print-cell">0</span>
+      </td>
       <td class="total-cell" id="total-${n}">$0.00</td>
       <td><button class="del-btn" onclick="delRow(${n})" title="Eliminar línea" tabindex="0">✕</button></td>
     `;
@@ -859,6 +996,19 @@
     recalc();
     // Focus detail input
     setTimeout(() => tr.querySelector('.wide').focus(), 50);
+  }
+
+  /* ── SYNC PRINT CELLS ── */
+  function syncPrint(input) {
+    const span = input.nextElementSibling;
+    if (span && span.classList.contains('print-cell')) {
+      span.textContent = input.value || input.placeholder || '';
+    }
+  }
+
+  /* ── SYNC ALL PRINT CELLS (called on init) ── */
+  function syncAllPrint() {
+    document.querySelectorAll('#inv-tbody .tbl-input').forEach(syncPrint);
   }
 
   /* ── CALC ROW ── */
@@ -995,6 +1145,7 @@
   /* ── INIT ── */
   addRow();
   addRow();
+  syncAllPrint();
 </script>
 </body>
 </html>
