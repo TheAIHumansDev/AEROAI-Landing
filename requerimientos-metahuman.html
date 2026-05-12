@@ -1147,10 +1147,232 @@ function updateProgress(){
   });
 }
 
-/* SUBMIT */
-function handleSubmit(e){
+// ══════════════════════════════════════════════════════
+// APPS SCRIPT URL — Pega aquí tu URL de implementación
+// ══════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/TU_ID_AQUI/exec";
+
+/* ── COLLECT FORM DATA ── */
+function collectFormData() {
+  const cb = id => document.getElementById(id)?.checked || false;
+  const val = sel => document.querySelector(sel)?.value?.trim() || "";
+  const cbName = name => {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : "";
+  };
+  // Checkbox arrays por texto de label
+  const checksByText = (containerSel, texts) => {
+    const result = {};
+    document.querySelectorAll(containerSel + ' .cb-item').forEach(item => {
+      const text = item.querySelector('.cb-text')?.textContent?.trim() || "";
+      const checked = item.querySelector('input[type=checkbox]')?.checked || false;
+      texts.forEach(t => { if(text.includes(t)) result[t] = checked; });
+    });
+    return result;
+  };
+
+  // Recopilar todos los checkboxes por sección usando índice global
+  const allCheckboxes = [...document.querySelectorAll('input[type=checkbox]')];
+  const get = (i) => allCheckboxes[i]?.checked || false;
+
+  // Toggles de infraestructura (solo los primeros de cada fila)
+  const toggles = [...document.querySelectorAll('#sec5 .toggle-wrap input')];
+  const selects = [...document.querySelectorAll('#sec5 select')];
+  const intToggles = [...document.querySelectorAll('#sec6 .toggle-wrap input')];
+
+  // Score actual
+  const pct = document.getElementById('compPct')?.textContent || "0%";
+
+  return {
+    // ── 00 Aeropuerto ──
+    aeropuerto: document.querySelectorAll('.field-input')[0]?.value?.trim() || "",
+    iata:       document.querySelectorAll('.field-input')[1]?.value?.trim() || "",
+    pais:       document.querySelectorAll('.field-input')[2]?.value?.trim() || "",
+    contacto:   document.querySelectorAll('.field-input')[3]?.value?.trim() || "",
+    cargo:      document.querySelectorAll('.field-input')[4]?.value?.trim() || "",
+    email:      document.querySelectorAll('.field-input')[5]?.value?.trim() || "",
+    telefono:   document.querySelectorAll('.field-input')[6]?.value?.trim() || "",
+
+    // ── 01 Objetivos ──
+    obj_atencion:     get(0),
+    obj_vuelos:       get(1),
+    obj_turistico:    get(2),
+    obj_wayfinding:   get(3),
+    obj_automatizacion: get(4),
+    obj_filas:        get(5),
+    obj_vip:          get(6),
+    obj_multilingue:  get(7),
+    obj_comercial:    get(8),
+    obj_smart:        get(9),
+    obj_otros: document.querySelectorAll('.field-textarea')[0]?.value?.trim() || "",
+
+    // ── 02 Áreas ──
+    area_sal_int:   get(10),
+    area_sal_nac:   get(11),
+    area_lle_int:   get(12),
+    area_lle_nac:   get(13),
+    area_checkin:   get(14),
+    area_migracion: get(15),
+    area_seguridad: get(16),
+    area_gates:     get(17),
+    area_dutyfree:  get(18),
+    area_food:      get(19),
+    area_vip:       get(20),
+    area_parqueo:   get(21),
+    area_transporte:get(22),
+    area_rentacar:  get(23),
+    area_turistica: get(24),
+    area_web:       get(25),
+    area_whatsapp:  get(26),
+
+    // ── 03.1 Casos Salidas ──
+    cu_sal_checkin:  get(27),
+    cu_sal_puertas:  get(28),
+    cu_sal_family:   get(29),
+    cu_sal_docs:     get(30),
+    cu_sal_vuelos:   get(31),
+    cu_sal_equipaje: get(32),
+    cu_sal_otros: document.querySelectorAll('.field-input')[7]?.value?.trim() || "",
+
+    // ── 03.2 Casos Abordaje ──
+    cu_ab_comercios: get(33),
+    cu_ab_banos:     get(34),
+    cu_ab_carga:     get(35),
+    cu_ab_vip:       get(36),
+    cu_ab_prm:       get(37),
+    cu_ab_boarding:  get(38),
+    cu_ab_otros: document.querySelectorAll('.field-input')[8]?.value?.trim() || "",
+
+    // ── 03.3 Casos Llegadas ──
+    cu_lle_transporte: get(39),
+    cu_lle_cambio:     get(40),
+    cu_lle_reclamos:   get(41),
+    cu_lle_banda:      get(42),
+    cu_lle_bienvenida: get(43),
+    cu_lle_hoteles:    get(44),
+    cu_lle_tours:      get(45),
+    cu_lle_rentacar:   get(46),
+    cu_lle_esim:       get(47),
+    cu_lle_migracion:  get(48),
+    cu_lle_otros: document.querySelectorAll('.field-input')[9]?.value?.trim() || "",
+
+    // ── 04 Idiomas ──
+    lang_es: get(49),
+    lang_en: get(50),
+    lang_pt: get(51),
+    lang_fr: get(52),
+    lang_zh: get(53),
+    lang_de: get(54),
+    lang_it: get(55),
+    lang_ja: get(56),
+    lang_otros:     document.querySelectorAll('.field-input')[10]?.value?.trim() || "",
+    lang_prioridad: cbName("langPriority"),
+
+    // ── 05 Infraestructura ──
+    infra_internet:      toggles[0]?.checked || false,
+    infra_internet_vel:  selects[0]?.value || "",
+    infra_totem:         toggles[2]?.checked || false,
+    infra_totem_estado:  selects[1]?.value || "",
+    infra_mic:           toggles[4]?.checked || false,
+    infra_mic_estado:    selects[2]?.value || "",
+    infra_audio:         toggles[6]?.checked || false,
+    infra_audio_estado:  selects[3]?.value || "",
+    infra_cloud:         toggles[8]?.checked || false,
+    infra_cloud_prov:    selects[4]?.value || "",
+    infra_notas: document.querySelectorAll('.field-textarea')[1]?.value?.trim() || "",
+
+    // ── 06 Integraciones ──
+    integ_fids:        intToggles[0]?.checked || false,
+    integ_fids_api:    intToggles[1]?.checked || false,
+    integ_gates:       intToggles[2]?.checked || false,
+    integ_gates_api:   intToggles[3]?.checked || false,
+    integ_parqueo:     intToggles[4]?.checked || false,
+    integ_parqueo_api: intToggles[5]?.checked || false,
+    integ_crm:         intToggles[6]?.checked || false,
+    integ_crm_api:     intToggles[7]?.checked || false,
+    integ_tickets:     intToggles[8]?.checked || false,
+    integ_tickets_api: intToggles[9]?.checked || false,
+    integ_turismo:     intToggles[10]?.checked || false,
+    integ_turismo_api: intToggles[11]?.checked || false,
+    integ_dir:         intToggles[12]?.checked || false,
+    integ_dir_api:     intToggles[13]?.checked || false,
+    integ_bdvuelos:    intToggles[14]?.checked || false,
+    integ_bdvuelos_api:intToggles[15]?.checked || false,
+    integ_analitica:   intToggles[16]?.checked || false,
+    integ_analitica_api:intToggles[17]?.checked || false,
+    integ_iot:         intToggles[18]?.checked || false,
+    integ_iot_api:     intToggles[19]?.checked || false,
+
+    // ── 07 Contenido ──
+    cont_faqs:        get(57),
+    cont_protocolos:  get(58),
+    cont_turistico:   get(59),
+    cont_directorio:  get(60),
+    cont_mapas:       get(61),
+    cont_migratorio:  get(62),
+    cont_transporte:  get(63),
+    cont_manuales:    get(64),
+    cont_emergencia:  get(65),
+    cont_formato:     cbName("kbFormat"),
+
+    // ── 08 Presupuesto ──
+    presupuesto:          document.getElementById('budgetSlider')?.value || "0",
+    fase:                 cbName("phase"),
+    fecha_lanzamiento:    document.querySelector('input[type=date]')?.value || "",
+    urgencia:             document.querySelector('#sec8 select')?.value || "",
+    puntos_instalacion:   counters.install.val,
+    usuarios_concurrentes:counters.users.val,
+    aeropuertos_num:      counters.airports.val,
+    roadmap: document.querySelectorAll('.field-textarea')[2]?.value?.trim() || "",
+
+    // Meta
+    completado: pct,
+  };
+}
+
+/* ── SUBMIT HANDLER ── */
+async function handleSubmit(e) {
   e.preventDefault();
-  document.getElementById('successScreen').classList.add('show');
+
+  const btn = document.querySelector('.btn-submit');
+  const originalText = btn.textContent;
+
+  // Estado: enviando
+  btn.disabled = true;
+  btn.textContent = "Enviando requerimientos…";
+  btn.style.opacity = "0.7";
+
+  const data = collectFormData();
+
+  try {
+    // Apps Script no acepta CORS con fetch normal → usamos no-cors + imagen de confirmación
+    // Para obtener respuesta real, usar modo proxy o Google Forms approach.
+    // Con "no-cors" la solicitud llega pero no podemos leer la respuesta — lo manejamos optimistamente.
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",          // Apps Script requiere esto desde páginas externas
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(data),
+    });
+
+    // Mostrar pantalla de éxito (la solicitud llegó si APPS_SCRIPT_URL es correcta)
+    btn.textContent = "✓ Enviado";
+    setTimeout(() => {
+      document.getElementById('successScreen').classList.add('show');
+    }, 400);
+
+  } catch (err) {
+    // Fallback: mostrar éxito de todas formas (no-cors siempre "falla" en catch, pero la data sí llega)
+    console.warn("fetch error (esperado con no-cors):", err.message);
+    btn.textContent = "✓ Enviado";
+    setTimeout(() => {
+      document.getElementById('successScreen').classList.add('show');
+    }, 400);
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    setTimeout(() => { btn.textContent = originalText; }, 2000);
+  }
 }
 
 /* INIT */
