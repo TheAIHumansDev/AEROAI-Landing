@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GHI Podcast — Join the Recording</title>
+<title>GHI Podcast — Giveaway</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
@@ -32,7 +32,6 @@
     position: relative;
   }
 
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -45,7 +44,6 @@
     z-index: 0;
   }
 
-  /* Radial glow orb */
   body::after {
     content: '';
     position: fixed;
@@ -70,7 +68,6 @@
     padding: 60px 24px;
   }
 
-  /* Top label */
   .eyebrow {
     display: flex;
     align-items: center;
@@ -101,7 +98,6 @@
     font-weight: 500;
   }
 
-  /* Heading */
   .heading-block {
     text-align: center;
     margin-bottom: 48px;
@@ -134,12 +130,11 @@
     font-size: 14px;
     color: var(--muted);
     letter-spacing: 0.05em;
-    max-width: 380px;
+    max-width: 420px;
     margin: 0 auto;
     line-height: 1.7;
   }
 
-  /* Card */
   .card {
     width: 100%;
     max-width: 480px;
@@ -163,21 +158,44 @@
     opacity: 0.6;
   }
 
-  /* Corner decorations */
-  .card-corner {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-  }
+  .card-corner { position: absolute; width: 20px; height: 20px; }
   .card-corner.tl { top: 12px; left: 12px; border-top: 1px solid var(--accent2); border-left: 1px solid var(--accent2); }
   .card-corner.tr { top: 12px; right: 12px; border-top: 1px solid var(--accent2); border-right: 1px solid var(--accent2); }
   .card-corner.bl { bottom: 12px; left: 12px; border-bottom: 1px solid var(--accent2); border-left: 1px solid var(--accent2); }
   .card-corner.br { bottom: 12px; right: 12px; border-bottom: 1px solid var(--accent2); border-right: 1px solid var(--accent2); }
 
-  /* Form */
-  .field {
-    margin-bottom: 24px;
+  .prize-banner {
+    background: rgba(0,229,200,0.06);
+    border: 1px solid rgba(0,229,200,0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
+
+  .prize-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .prize-text {
+    font-size: 12px;
+    color: var(--accent2);
+    letter-spacing: 0.06em;
+    line-height: 1.6;
+  }
+
+  .prize-text strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    color: #fff;
+  }
+
+  .field { margin-bottom: 24px; }
 
   label {
     display: block;
@@ -203,9 +221,7 @@
   }
 
   input[type="text"]::placeholder,
-  input[type="email"]::placeholder {
-    color: rgba(107,127,163,0.5);
-  }
+  input[type="email"]::placeholder { color: rgba(107,127,163,0.5); }
 
   input[type="text"]:focus,
   input[type="email"]:focus {
@@ -226,10 +242,17 @@
     letter-spacing: 0.05em;
   }
 
-  /* Button */
+  .terms-note {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    margin-bottom: 20px;
+  }
+
   .btn {
     width: 100%;
-    margin-top: 8px;
+    margin-top: 4px;
     padding: 16px;
     background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
     border: none;
@@ -251,7 +274,6 @@
 
   .btn-text { position: relative; z-index: 1; }
 
-  /* Loading spinner inside button */
   .btn-spinner {
     display: none;
     width: 18px;
@@ -265,7 +287,15 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Success state */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 28px 0 0;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+
   .success-panel {
     display: none;
     text-align: center;
@@ -300,17 +330,6 @@
     line-height: 1.7;
   }
 
-  /* Divider */
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin: 28px 0 0;
-  }
-  .divider-line { flex: 1; height: 1px; background: var(--border); }
-  .divider-text { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
-
-  /* Stats bar */
   .stats {
     display: flex;
     justify-content: center;
@@ -339,7 +358,6 @@
     margin-top: 4px;
   }
 
-  /* Footer */
   .footer {
     margin-top: 48px;
     font-size: 11px;
@@ -349,7 +367,6 @@
     animation: fadeUp 0.7s ease 0.45s both;
   }
 
-  /* Animations */
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-16px); }
     to { opacity: 1; transform: translateY(0); }
@@ -359,7 +376,6 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Scanline flicker for sci-fi feel */
   .scanline {
     position: fixed;
     inset: 0;
@@ -381,7 +397,7 @@
 <div class="wrapper">
   <div class="eyebrow">
     <span class="eyebrow-dot"></span>
-    <span class="eyebrow-text">Now accepting participants</span>
+    <span class="eyebrow-text">Giveaway — Limited entries</span>
   </div>
 
   <div class="heading-block">
@@ -389,7 +405,7 @@
       <span class="h1-ghi">GHI</span>
       <span class="h1-podcast">Podcast</span>
     </h1>
-    <p class="subtitle">Reserve your spot in the recording session. Limited seats available for selected participants.</p>
+    <p class="subtitle">Enter the giveaway for a chance to be part of a live podcast recording. Fill in your details below — one winner will join us in studio.</p>
   </div>
 
   <div class="card">
@@ -398,8 +414,15 @@
     <div class="card-corner bl"></div>
     <div class="card-corner br"></div>
 
-    <!-- Form -->
     <div id="form-section">
+      <div class="prize-banner">
+        <span class="prize-icon">🎙️</span>
+        <div class="prize-text">
+          <strong>Win a seat at the recording</strong>
+          Join the GHI Podcast team live in the studio as a special guest participant.
+        </div>
+      </div>
+
       <div class="field">
         <label for="fullname">Full name</label>
         <input type="text" id="fullname" placeholder="Your full name" autocomplete="name">
@@ -412,42 +435,43 @@
         <div class="field-error" id="email-error">Please enter a valid email address.</div>
       </div>
 
+      <p class="terms-note">By entering, you agree to be contacted if selected. One entry per person. Winner announced via email.</p>
+
       <button class="btn" id="submit-btn" onclick="handleSubmit()">
-        <span class="btn-text" id="btn-label">Apply for a Spot</span>
+        <span class="btn-text" id="btn-label">Enter the Giveaway</span>
         <div class="btn-spinner" id="btn-spinner"></div>
       </button>
 
       <div class="divider">
         <div class="divider-line"></div>
-        <span class="divider-text">Secure &amp; confidential</span>
+        <span class="divider-text">Free to enter &amp; no purchase necessary</span>
         <div class="divider-line"></div>
       </div>
     </div>
 
-    <!-- Success -->
     <div class="success-panel" id="success-panel">
       <div class="success-icon">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
       </div>
-      <div class="success-title">You're on the list.</div>
-      <p class="success-sub">We received your application.<br>We'll reach out soon with next steps.</p>
+      <div class="success-title">You're in the draw!</div>
+      <p class="success-sub">Your entry has been received.<br>We'll email you if you're selected to join the recording.</p>
     </div>
   </div>
 
   <div class="stats">
     <div class="stat">
-      <div class="stat-num">12</div>
-      <div class="stat-label">Episodes</div>
+      <div class="stat-num">1</div>
+      <div class="stat-label">Grand prize</div>
     </div>
     <div class="stat">
       <div class="stat-num">40K+</div>
       <div class="stat-label">Listeners</div>
     </div>
     <div class="stat">
-      <div class="stat-num">8</div>
-      <div class="stat-label">Seats left</div>
+      <div class="stat-num">Live</div>
+      <div class="stat-label">Recording</div>
     </div>
   </div>
 
