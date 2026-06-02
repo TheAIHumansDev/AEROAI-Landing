@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHI Podcast — Join the Recording</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050810;
+    --surface: #0c1220;
+    --surface2: #111928;
+    --border: rgba(99,180,255,0.12);
+    --border-glow: rgba(99,180,255,0.35);
+    --accent: #4fa8ff;
+    --accent2: #00e5c8;
+    --text: #e8f0ff;
+    --muted: #6b7fa3;
+    --error: #ff5c6c;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,180,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,180,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow orb */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(79,168,255,0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+
+  /* Top label */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .eyebrow-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 12px var(--accent2);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .eyebrow-text {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  /* Heading */
+  .heading-block {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeDown 0.7s ease 0.1s both;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 8vw, 86px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+
+  .h1-ghi {
+    display: block;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .h1-podcast {
+    display: block;
+    color: var(--text);
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    max-width: 380px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Card */
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.7s ease 0.2s both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    opacity: 0.6;
+  }
+
+  /* Corner decorations */
+  .card-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+  }
+  .card-corner.tl { top: 12px; left: 12px; border-top: 1px solid var(--accent2); border-left: 1px solid var(--accent2); }
+  .card-corner.tr { top: 12px; right: 12px; border-top: 1px solid var(--accent2); border-right: 1px solid var(--accent2); }
+  .card-corner.bl { bottom: 12px; left: 12px; border-bottom: 1px solid var(--accent2); border-left: 1px solid var(--accent2); }
+  .card-corner.br { bottom: 12px; right: 12px; border-bottom: 1px solid var(--accent2); border-right: 1px solid var(--accent2); }
+
+  /* Form */
+  .field {
+    margin-bottom: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  input[type="text"],
+  input[type="email"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder {
+    color: rgba(107,127,163,0.5);
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,168,255,0.1);
+  }
+
+  input.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(255,92,108,0.1);
+  }
+
+  .field-error {
+    font-size: 11px;
+    color: var(--error);
+    margin-top: 7px;
+    display: none;
+    letter-spacing: 0.05em;
+  }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    margin-top: 8px;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #050810;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+
+  .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0) scale(0.99); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-text { position: relative; z-index: 1; }
+
+  /* Loading spinner inside button */
+  .btn-spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(5,8,16,0.3);
+    border-top-color: #050810;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin: 0 auto;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Success state */
+  .success-panel {
+    display: none;
+    text-align: center;
+    padding: 16px 0;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .success-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(0,229,200,0.1);
+    border: 1px solid rgba(0,229,200,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .success-icon svg { stroke: var(--accent2); }
+
+  .success-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .success-sub {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 28px 0 0;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; white-space: nowrap; }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 40px;
+    animation: fadeUp 0.7s ease 0.35s both;
+  }
+
+  .stat { text-align: center; }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 48px;
+    font-size: 11px;
+    color: rgba(107,127,163,0.5);
+    letter-spacing: 0.08em;
+    text-align: center;
+    animation: fadeUp 0.7s ease 0.45s both;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Scanline flicker for sci-fi feel */
+  .scanline {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 3px,
+      rgba(0,0,0,0.03) 3px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+
+<div class="wrapper">
+  <div class="eyebrow">
+    <span class="eyebrow-dot"></span>
+    <span class="eyebrow-text">Now accepting participants</span>
+  </div>
+
+  <div class="heading-block">
+    <h1>
+      <span class="h1-ghi">GHI</span>
+      <span class="h1-podcast">Podcast</span>
+    </h1>
+    <p class="subtitle">Reserve your spot in the recording session. Limited seats available for selected participants.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-corner tl"></div>
+    <div class="card-corner tr"></div>
+    <div class="card-corner bl"></div>
+    <div class="card-corner br"></div>
+
+    <!-- Form -->
+    <div id="form-section">
+      <div class="field">
+        <label for="fullname">Full name</label>
+        <input type="text" id="fullname" placeholder="Your full name" autocomplete="name">
+        <div class="field-error" id="name-error">Please enter your full name.</div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+        <div class="field-error" id="email-error">Please enter a valid email address.</div>
+      </div>
+
+      <button class="btn" id="submit-btn" onclick="handleSubmit()">
+        <span class="btn-text" id="btn-label">Apply for a Spot</span>
+        <div class="btn-spinner" id="btn-spinner"></div>
+      </button>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">Secure &amp; confidential</span>
+        <div class="divider-line"></div>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div class="success-panel" id="success-panel">
+      <div class="success-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="success-title">You're on the list.</div>
+      <p class="success-sub">We received your application.<br>We'll reach out soon with next steps.</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">12</div>
+      <div class="stat-label">Episodes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">40K+</div>
+      <div class="stat-label">Listeners</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">8</div>
+      <div class="stat-label">Seats left</div>
+    </div>
+  </div>
+
+  <div class="footer">GHI Podcast &nbsp;·&nbsp; All rights reserved &nbsp;·&nbsp; 2026</div>
+</div>
+
+<script>
+  const WEBAPP_URL = 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+  function validateEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  }
+
+  async function handleSubmit() {
+    const nameInput = document.getElementById('fullname');
+    const emailInput = document.getElementById('email');
+    const nameError = document.getElementById('name-error');
+    const emailError = document.getElementById('email-error');
+
+    let valid = true;
+
+    nameInput.classList.remove('error');
+    emailInput.classList.remove('error');
+    nameError.style.display = 'none';
+    emailError.style.display = 'none';
+
+    if (!nameInput.value.trim() || nameInput.value.trim().length < 2) {
+      nameInput.classList.add('error');
+      nameError.style.display = 'block';
+      valid = false;
+    }
+
+    if (!validateEmail(emailInput.value)) {
+      emailInput.classList.add('error');
+      emailError.style.display = 'block';
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    const btn = document.getElementById('submit-btn');
+    const btnLabel = document.getElementById('btn-label');
+    const spinner = document.getElementById('btn-spinner');
+
+    btn.disabled = true;
+    btnLabel.style.display = 'none';
+    spinner.style.display = 'block';
+
+    try {
+      await fetch(WEBAPP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullname: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          timestamp: new Date().toISOString()
+        })
+      });
+    } catch (e) {
+      console.warn('Submission note:', e);
+    }
+
+    document.getElementById('form-section').style.display = 'none';
+    const panel = document.getElementById('success-panel');
+    panel.style.display = 'block';
+  }
+
+  document.getElementById('fullname').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('email').focus();
+  });
+  document.getElementById('email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+</script>
+</body>
+</html>
