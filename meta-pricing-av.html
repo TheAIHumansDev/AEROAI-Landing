@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroAI MetaHuman — Calculadora de Proyecciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-soft:#f8f9fa;
+    --bg-soft-2:#f1f3f4;
+    --border:#dadce0;
+    --border-soft:#e8eaed;
+    --text:#202124;
+    --text-2:#5f6368;
+    --text-3:#80868b;
+    --red:#E4002B;
+    --red-dark:#B4001F;
+    --red-tint:#FDECEF;
+    --red-tint-2:#FBD5DB;
+    --green:#1E8E3E;
+    --green-tint:#E6F4EA;
+    --amber:#B7791F;
+    --amber-tint:#FFF6E0;
+    --radius:8px;
+    --shadow: 0 1px 2px rgba(60,64,67,0.12), 0 1px 3px rgba(60,64,67,0.08);
+    --shadow-md: 0 1px 3px rgba(60,64,67,0.15), 0 4px 12px rgba(60,64,67,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Roboto',Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3,.display{ font-family:'Inter',sans-serif; }
+  .mono{ font-family:'Roboto Mono', monospace; }
+  a{color:inherit;}
+  .wrap{ max-width:1260px; margin:0 auto; padding:0 28px; }
+  ::selection{ background:var(--red-tint-2); }
+
+  nav{ position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--border-soft); }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:64px; }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-0.01em; font-size:15px; }
+  .brand .mark{ width:26px; height:26px; border-radius:6px; background:var(--red); display:flex; align-items:center; justify-content:center; }
+  .brand .mark svg{ width:14px; height:14px; }
+  .brand small{ display:block; color:var(--text-3); font-weight:500; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; margin-top:1px;}
+  .navlinks{ display:flex; gap:22px; font-size:13.5px; color:var(--text-2); font-weight:500; }
+  .navlinks a{ text-decoration:none; transition:color .15s; }
+  .navlinks a:hover{ color:var(--red); }
+  @media (max-width:900px){ .navlinks{ display:none; } }
+
+  header.hero{ position:relative; overflow:hidden; min-height:78vh; display:flex; align-items:flex-end; padding:0; }
+  .hero-media{ position:absolute; inset:0; z-index:0; background:#0c1117; }
+  .hero-video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0.9; }
+  .hero-fallback-bg{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 20%, rgba(228,0,43,0.35), transparent 60%),
+      radial-gradient(ellipse 70% 60% at 85% 80%, rgba(30,42,56,0.9), transparent 65%),
+      linear-gradient(135deg, #12161d, #1c222b 45%, #0c0e12);
+    background-size:220% 220%, 220% 220%, 100% 100%;
+    animation: heroDrift 22s ease-in-out infinite;
+  }
+  @keyframes heroDrift{
+    0%{ background-position: 0% 0%, 100% 100%, 0 0; }
+    50%{ background-position: 60% 40%, 30% 60%, 0 0; }
+    100%{ background-position: 0% 0%, 100% 100%, 0 0; }
+  }
+  .hero-overlay{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(8,10,13,0.55) 0%, rgba(8,10,13,0.72) 55%, rgba(255,255,255,0.98) 100%); }
+  .hero-content{ position:relative; z-index:2; padding:120px 28px 64px; max-width:820px; }
+  .hero-content .eyebrow{ background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.24); color:#fff; backdrop-filter:blur(4px); }
+  .hero-content h1.headline{ color:#fff; }
+  .hero-content h1.headline em{ color:#FF6B7F; }
+  .hero-content .sub{ color:rgba(255,255,255,0.82); }
+  .btn-ghost-dark{ background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.35); color:#fff; backdrop-filter:blur(4px); }
+  .btn-ghost-dark:hover{ background:rgba(255,255,255,0.16); border-color:#fff; }
+  .rate-chip.dark{ background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.28); color:#fff; backdrop-filter:blur(4px); }
+  .rate-chip.dark b{ color:#FF6B7F; }
+  @media (max-width:720px){ header.hero{ min-height:64vh; } .hero-content{ padding:90px 24px 48px; } }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-size:12px; letter-spacing:0.06em; font-weight:600; color:var(--red); background:var(--red-tint); border:1px solid var(--red-tint-2); padding:6px 12px; border-radius:100px; margin-bottom:20px; }
+  h1.headline{ font-size:clamp(28px,3.8vw,44px); line-height:1.14; font-weight:800; margin:0 0 18px; letter-spacing:-0.02em; color:var(--text); }
+  h1.headline em{ font-style:normal; color:var(--red); }
+  .sub{ font-size:16px; line-height:1.6; color:var(--text-2); max-width:56ch; margin:0 0 26px; }
+  .cta-row{ display:flex; gap:12px; flex-wrap:wrap; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:6px; font-weight:600; font-size:14px; cursor:pointer; border:1px solid transparent; text-decoration:none; transition:background .15s,border-color .15s; }
+  .btn-primary{ background:var(--red); color:#fff; box-shadow:var(--shadow); }
+  .btn-primary:hover{ background:var(--red-dark); }
+  .btn-ghost{ background:#fff; border-color:var(--border); color:var(--text); }
+  .btn-ghost:hover{ border-color:var(--text-3); background:var(--bg-soft); }
+
+  .rate-chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .rate-chip{ font-size:12px; font-family:'Roboto Mono',monospace; font-weight:600; color:var(--text); background:var(--bg-soft-2); border:1px solid var(--border); padding:6px 10px; border-radius:100px; }
+  .rate-chip b{ color:var(--red); }
+
+  .estimate-card{ background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md); overflow:hidden; }
+  .estimate-head{ padding:18px 20px; border-bottom:1px solid var(--border-soft); display:flex; justify-content:space-between; align-items:center; }
+  .estimate-head .t{ font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-2); }
+  .estimate-head .badge{ font-size:11px; font-weight:600; color:var(--red); background:var(--red-tint); padding:3px 9px; border-radius:100px; display:flex; align-items:center; gap:5px; }
+  .estimate-head .badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--red); animation:pulse 1.8s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .erow{ display:flex; align-items:baseline; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border-soft); }
+  .erow .k{ font-size:13px; color:var(--text-2); }
+  .erow .v{ font-size:15px; font-weight:600; color:var(--text); transition:opacity .18s; }
+  .erow.total{ padding:18px 20px; background:var(--bg-soft); }
+  .erow.total .k{ font-size:13px; font-weight:600; color:var(--text); }
+  .erow.total .v{ font-size:26px; font-weight:800; color:var(--red); }
+  .v.flip{ animation:flip .28s ease; }
+  @keyframes flip{ 0%{ opacity:0.15; transform:translateY(-4px);} 100%{opacity:1; transform:translateY(0);} }
+  .estimate-foot{ padding:14px 20px; font-size:11.5px; color:var(--text-3); line-height:1.5; }
+  .estimate-actions{ display:flex; gap:8px; padding:0 20px 18px; }
+  .link-btn{ flex:1; text-align:center; padding:9px 10px; border-radius:6px; border:1px solid var(--border); background:#fff; font-size:12.5px; font-weight:600; color:var(--text); cursor:pointer; }
+  .link-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  section{ padding:56px 0; }
+  section.alt{ background:var(--bg-soft); }
+  .section-head{ margin-bottom:30px; max-width:70ch; }
+  .kicker{ font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--red); font-weight:700; margin-bottom:10px; }
+  h2{ font-size:clamp(22px,2.6vw,30px); margin:0 0 10px; letter-spacing:-0.01em; font-weight:800; }
+  .section-head p{ color:var(--text-2); line-height:1.6; font-size:15px; margin:0; }
+
+  .pilot-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  @media (max-width:940px){ .pilot-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .pilot-grid{ grid-template-columns:1fr; } }
+  .pcard{ background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+  .pcard .tag{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-3); font-weight:600; margin-bottom:14px; }
+  .pcard .code{ font-family:'Roboto Mono',monospace; font-size:27px; font-weight:700; color:var(--text); }
+  .pcard .name{ font-size:13.5px; color:var(--text-2); margin-top:2px; }
+  .pcard ul{ list-style:none; margin:16px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .pcard li{ font-size:13px; color:var(--text-2); display:flex; justify-content:space-between; border-top:1px dashed var(--border-soft); padding-top:8px; }
+  .pcard li b{ color:var(--text); font-weight:700; font-family:'Roboto Mono',monospace; }
+  .pcard.hub{ background:linear-gradient(160deg,#fff, var(--red-tint)); border-color:var(--red-tint-2); }
+  .pcard.hub .code{ color:var(--red); }
+
+  .steps-grid{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; }
+  @media (max-width:1040px){ .steps-grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .steps-grid{ grid-template-columns:1fr; } }
+  .step-card{ background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
+  .step-num{ font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; color:var(--red); background:var(--red-tint); display:inline-flex; padding:3px 9px; border-radius:100px; margin-bottom:12px; }
+  .step-card h4{ font-size:14.5px; margin:0 0 6px; font-weight:700; }
+  .step-card p{ font-size:12.5px; color:var(--text-2); line-height:1.55; margin:0; }
+
+  .compare-table-wrap{ background:#fff; border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow-x:auto; }
+  table.compare-table{ width:100%; border-collapse:collapse; font-size:14px; min-width:700px; }
+  table.compare-table th{ text-align:left; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); font-weight:700; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--bg-soft); }
+  table.compare-table td{ padding:16px 18px; border-bottom:1px solid var(--border-soft); }
+  table.compare-table th:not(:first-child), table.compare-table td:not(:first-child){ text-align:right; }
+  table.compare-table td.station-cell{ font-family:'Roboto Mono',monospace; font-weight:700; font-size:15px; }
+  table.compare-table td.human-cell{ font-family:'Roboto Mono',monospace; color:var(--text); }
+  table.compare-table td.meta-cell{ font-family:'Roboto Mono',monospace; color:var(--red); font-weight:700; }
+  table.compare-table td.save-cell{ font-family:'Roboto Mono',monospace; font-weight:700; color:var(--green); }
+  table.compare-table tr:last-child td{ border-bottom:none; }
+  .compare-note{ font-size:12px; color:var(--text-3); line-height:1.55; padding:16px 18px 4px; }
+
+  .guarantee-banner{ display:flex; align-items:center; gap:16px; background:var(--red); color:#fff; border-radius:var(--radius); padding:18px 22px; margin-bottom:26px; flex-wrap:wrap; }
+  .guarantee-banner .gnum{ font-size:26px; font-weight:800; font-family:'Roboto Mono',monospace; white-space:nowrap; }
+  .guarantee-banner .gtxt{ font-size:14px; line-height:1.5; opacity:0.95; }
+
+  .tabs{ display:inline-flex; background:var(--bg-soft-2); border-radius:8px; padding:4px; gap:2px; margin-bottom:28px; flex-wrap:wrap; }
+  .tab-btn{ background:transparent; border:none; color:var(--text-2); padding:9px 16px; border-radius:6px; font-size:13.5px; cursor:pointer; font-weight:600; font-family:'Roboto',sans-serif; }
+  .tab-btn.active{ background:#fff; color:var(--red); box-shadow:var(--shadow); }
+
+  .builder-grid{ display:grid; grid-template-columns:1.3fr 0.8fr; gap:26px; align-items:start; }
+  @media (max-width:980px){ .builder-grid{ grid-template-columns:1fr; } }
+
+  .panel{ background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:22px; margin-bottom:18px; box-shadow:var(--shadow); }
+  .panel h3{ font-size:14.5px; margin:0 0 3px; font-weight:700; }
+  .panel .hint{ font-size:12.5px; color:var(--text-2); margin:0 0 16px; line-height:1.5; }
+
+  table.stations{ width:100%; border-collapse:collapse; font-size:12.5px; min-width:820px; }
+  table.stations thead th{ text-align:left; font-size:10px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-3); font-weight:700; padding:0 6px 10px; border-bottom:1px solid var(--border); }
+  table.stations th:nth-child(n+4), table.stations td:nth-child(n+4){ text-align:right; }
+  table.stations td{ padding:6px; border-bottom:1px solid var(--border-soft); vertical-align:middle; }
+  table.stations input[type="text"]{ width:58px; }
+  table.stations input[type="number"]{ width:50px; }
+  .station-scroll{ max-height:320px; overflow:auto; margin:0 -4px; padding:0 4px; }
+  .station-scroll::-webkit-scrollbar{ height:6px; width:6px; }
+  .station-scroll::-webkit-scrollbar-thumb{ background:var(--border); border-radius:6px; }
+  .cell-human{ font-family:'Roboto Mono',monospace; color:var(--text-2); font-size:12px; }
+  .cell-meta{ font-family:'Roboto Mono',monospace; color:var(--red); font-size:12px; font-weight:600; }
+  .cell-save{ font-family:'Roboto Mono',monospace; font-size:12px; font-weight:700; color:var(--green); }
+  .cell-points{ font-family:'Roboto Mono',monospace; font-size:12px; color:var(--text-2); }
+
+  input[type="text"], input[type="number"]{
+    background:#fff; border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:7px 9px; font-size:13px; font-family:'Roboto Mono',monospace;
+  }
+  input[type="text"]:focus, input[type="number"]:focus{ outline:none; border-color:var(--red); box-shadow:0 0 0 3px var(--red-tint); }
+  .row-remove{ background:none; border:none; color:var(--text-3); cursor:pointer; font-size:15px; padding:4px 8px; border-radius:6px; }
+  .row-remove:hover{ color:var(--red); background:var(--red-tint); }
+
+  .addrow-actions{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .small-btn{ background:#fff; border:1px solid var(--border); color:var(--text); padding:8px 14px; border-radius:6px; font-size:12.5px; cursor:pointer; font-weight:600; }
+  .small-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  .field-row{ display:grid; grid-template-columns:1fr 120px; align-items:center; gap:14px; margin-bottom:14px; }
+  .field-row label{ font-size:13.5px; color:var(--text); font-weight:500; }
+  .field-row .desc{ font-size:11.5px; color:var(--text-3); display:block; margin-top:2px; font-weight:400; }
+  .field-row input[type="number"]{ width:100%; text-align:right; }
+
+  .toggle-row{ display:flex; align-items:flex-start; gap:12px; padding:12px 14px; background:var(--bg-soft); border-radius:8px; border:1px solid var(--border-soft); }
+  .toggle-row input[type="checkbox"]{ width:18px; height:18px; accent-color:var(--red); margin-top:2px; }
+  .toggle-row .tlabel{ font-size:13.5px; font-weight:600; color:var(--text); }
+  .toggle-row .tdesc{ font-size:12px; color:var(--text-2); margin-top:2px; line-height:1.5; }
+  .contribution-badge{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; color:var(--amber); background:var(--amber-tint); padding:3px 9px; border-radius:100px; margin-top:8px; }
+
+  input[type="range"]{ width:100%; accent-color:var(--red); }
+  .slider-value{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-2); margin-top:6px; }
+  .slider-value b{ color:var(--red); font-family:'Roboto Mono',monospace; font-weight:700; }
+
+  .addon-row{ display:grid; grid-template-columns:26px 1fr 90px 90px; gap:12px; align-items:center; padding:11px 0; border-bottom:1px solid var(--border-soft); }
+  .addon-row:last-child{ border-bottom:none; }
+  .addon-row input[type="checkbox"]{ width:17px; height:17px; accent-color:var(--red); }
+  .addon-name{ font-size:13.5px; font-weight:600; color:var(--text); }
+  .addon-desc{ font-size:11.5px; color:var(--text-3); margin-top:1px; }
+  .addon-row input[type="number"]{ width:100%; text-align:right; }
+  .addon-row.dim{ opacity:0.4; }
+  .addon-col-label{ font-size:10px; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-3); font-weight:700; }
+  .addon-header-row{ display:grid; grid-template-columns:26px 1fr 90px 90px; gap:12px; padding-bottom:8px; border-bottom:1px solid var(--border); margin-bottom:2px; }
+  .fixed-price-chip{ font-family:'Roboto Mono',monospace; font-size:12.5px; font-weight:600; color:var(--text-2); background:var(--bg-soft-2); border:1px solid var(--border); border-radius:6px; padding:7px 8px; text-align:center; }
+
+  .pricelist{ display:flex; flex-direction:column; gap:0; }
+  .pricelist .prow{ display:flex; justify-content:space-between; align-items:baseline; padding:11px 0; border-bottom:1px solid var(--border-soft); font-size:13.5px; gap:16px; }
+  .pricelist .prow:last-child{ border-bottom:none; }
+  .pricelist .prow .pk{ color:var(--text); }
+  .pricelist .prow .pk small{ display:block; color:var(--text-3); font-size:11px; margin-top:1px; }
+  .pricelist .prow .pv{ font-family:'Roboto Mono',monospace; font-weight:700; color:var(--red); white-space:nowrap; text-align:right; }
+  .locked-tag{ display:inline-flex; align-items:center; gap:5px; font-size:11px; color:var(--text-3); font-weight:600; }
+  .core-tag{ display:inline-flex; align-items:center; gap:5px; font-size:10.5px; color:var(--red); background:var(--red-tint); font-weight:700; padding:3px 9px; border-radius:100px; margin-left:8px; }
+
+  .sticky-col{ position:sticky; top:84px; display:flex; flex-direction:column; gap:16px; }
+
+  .sku-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  .sku-table th{ text-align:left; font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-3); font-weight:700; padding:0 10px 10px; border-bottom:1px solid var(--border); }
+  .sku-table th:not(:first-child), .sku-table td:not(:first-child){ text-align:right; }
+  .sku-table td{ padding:10px; border-bottom:1px solid var(--border-soft); }
+  .sku-table td.comp{ color:var(--text); font-weight:500; text-align:left; }
+  .sku-table td.comp small{ display:block; color:var(--amber); font-weight:600; font-size:11px; margin-top:2px; }
+  .sku-table td.num{ font-family:'Roboto Mono',monospace; color:var(--text-2); }
+  .sku-table tr.total-row td{ border-top:2px solid var(--text); border-bottom:none; font-weight:700; color:var(--text); padding-top:14px; }
+  .sku-table tr.total-row td.num{ color:var(--red); font-size:15px; }
+  .sku-wrap{ overflow-x:auto; }
+
+  .note{ font-size:12px; color:var(--text-3); line-height:1.55; padding:14px 16px; background:var(--bg-soft); border-radius:8px; border:1px solid var(--border-soft); }
+
+  .network-compare{ background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); }
+  .network-compare h3{ font-size:14.5px; margin:0 0 4px; font-weight:700; }
+  .network-compare .hint{ font-size:12.5px; color:var(--text-2); margin:0 0 16px; }
+  .nc-row{ display:flex; justify-content:space-between; align-items:baseline; padding:10px 0; border-bottom:1px solid var(--border-soft); font-size:13.5px; }
+  .nc-row .v{ font-family:'Roboto Mono',monospace; font-weight:700; }
+  .nc-row.hl .v{ color:var(--red); font-size:20px; }
+  .nc-row.save{ background:var(--green-tint); margin:10px -22px -22px; padding:14px 22px; border-radius:0 0 8px 8px; border-bottom:none; }
+  .nc-row.save .v{ color:var(--green); font-size:20px; }
+
+  footer{ border-top:1px solid var(--border-soft); padding:34px 0 48px; background:var(--bg-soft); }
+  footer .wrap{ display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; }
+  footer .fine{ font-size:12px; color:var(--text-3); max-width:58ch; line-height:1.6; }
+  footer .brand small{ color:var(--text-3); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M2 16l8-3 2-8 2 8 8 3-8 2-2 5-2-5-8-2z" fill="white"/></svg></span>
+      <div>
+        AeroAI MetaHuman
+        <small>Calculadora de proyecciones · Avianca</small>
+      </div>
+    </div>
+    <div class="navlinks">
+      <a href="#roadmap">VASA Roadmap</a>
+      <a href="#comparar">Humano vs MetaHuman</a>
+      <a href="#como-armar">Cómo armar tu plan</a>
+      <a href="#constructor">Calculadora</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-media">
+    <video class="hero-video" autoplay muted loop playsinline poster="" id="hero-video">
+      <source src="demo.mp4" type="video/mp4">
+      <source src="assets/hero-background.webm" type="video/webm">
+    </video>
+    <div class="hero-fallback-bg" id="hero-fallback-bg"></div>
+    <div class="hero-overlay"></div>
+  </div>
+  <div class="wrap hero-content">
+    <div class="eyebrow">Herramienta para el equipo operativo</div>
+    <h1 class="headline">Proyecta los números de tu red de <em>humanos digitales</em>, estación por estación.</h1>
+    <p class="sub">Arma tu escenario con las estaciones, kioscos y tótems reales, y compara al instante contra el costo de tener una persona en ese mismo punto — con la tarifa de cada estación.</p>
+    <div class="cta-row">
+      <a href="#comparar" class="btn btn-primary">Ver el ahorro por estación</a>
+      <a href="#constructor" class="btn btn-ghost-dark">Abrir calculadora →</a>
+    </div>
+    <div class="rate-chip-row" style="margin-top:22px;">
+      <span class="rate-chip dark">Licencia = <b>35%</b> del costo humano local</span>
+      <span class="rate-chip dark">Mínimo <b>$2,400</b>/año</span>
+      <span class="rate-chip dark">Tope <b>$24,000</b>/año</span>
+    </div>
+  </div>
+</header>
+
+<section id="roadmap">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Escenario base</div>
+      <h2>VASA Roadmap</h2>
+      <p>Cada estación arranca con la misma base: 2 tótems en terminal, 1 tótem en aduanas/equipaje y 5 kioscos de auto check-in (hardware existente de Avianca). En esta primera fase se paga la licencia de cada punto; la cuota de implementación se aporta al proyecto y no se cobra, y el hardware de tótem puede ser propio de Avianca o comprado con nosotros.</p>
+    </div>
+    <div class="pilot-grid">
+      <div class="pcard">
+        <div class="tag">Estación</div>
+        <div class="code">SAL</div>
+        <div class="name">San Salvador</div>
+        <ul>
+          <li>Tótems en terminal <b>2</b></li>
+          <li>Tótems aduanas / equipaje <b>1</b></li>
+          <li>Check-in en esta estación <b>5</b></li>
+        </ul>
+      </div>
+      <div class="pcard">
+        <div class="tag">Estación</div>
+        <div class="code">BOG</div>
+        <div class="name">Bogotá</div>
+        <ul>
+          <li>Tótems en terminal <b>2</b></li>
+          <li>Tótems aduanas / equipaje <b>1</b></li>
+          <li>Check-in en esta estación <b>5</b></li>
+        </ul>
+      </div>
+      <div class="pcard">
+        <div class="tag">Estación</div>
+        <div class="code">JFK</div>
+        <div class="name">Nueva York</div>
+        <ul>
+          <li>Tótems en terminal <b>2</b></li>
+          <li>Tótems aduanas / equipaje <b>1</b></li>
+          <li>Check-in en esta estación <b>5</b></li>
+        </ul>
+      </div>
+      <div class="pcard hub">
+        <div class="tag">Referencia de costo</div>
+        <div class="code">Licencia</div>
+        <div class="name">MetaHuman por punto</div>
+        <ul>
+          <li>Se calcula por <b>Punto (kiosco o tótem)</b></li>
+          <li>Basada en <b>Costo humano local</b></li>
+          <li>Siempre <b>Menor que un humano</b></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="comparar">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Para tus números</div>
+      <h2>La licencia siempre cuesta menos que una persona en ese punto</h2>
+      <p>El costo de un agente varía mucho según el país y el aeropuerto — por eso la licencia de cada punto se calcula como un porcentaje del costo humano local, con un piso y un tope. El resultado: una referencia de ahorro consistente que el equipo operativo puede usar en cualquier estación.</p>
+    </div>
+    <div class="guarantee-banner">
+      <div class="gnum">~65%</div>
+      <div class="gtxt">Ahorro típico de la licencia MetaHuman frente a un agente humano en el mismo punto, en cualquier estación — porque el precio de la licencia se fija como fracción del costo humano de esa estación, nunca al revés.</div>
+    </div>
+    <div class="compare-table-wrap">
+      <table class="compare-table" id="compare-table">
+        <thead>
+          <tr>
+            <th>Estación</th>
+            <th>Puntos (tótems + check-in)</th>
+            <th>Costo humano total (turno 8h/año)</th>
+            <th>Licencia MetaHuman total (año)</th>
+            <th>Ahorro anual</th>
+          </tr>
+        </thead>
+        <tbody id="compare-body"></tbody>
+      </table>
+      <p class="compare-note">Costo humano: un agente de turno único por cada punto físico, costo totalmente cargado. Licencia MetaHuman: 35% de ese costo humano local, con piso de $2,400/año y tope de $24,000/año por punto. No incluye hardware ni minutos conversacionales — esos se muestran aparte en la calculadora.</p>
+    </div>
+  </div>
+</section>
+
+<section id="como-armar">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Guía rápida</div>
+      <h2>Cómo armar tu plan en 5 pasos</h2>
+      <p>La calculadora de abajo sigue este mismo orden. Los precios ya están fijos — tú solo mueves cantidades y decides qué comprar.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h4>Elige tus estaciones y puntos</h4>
+        <p>Añade cada aeropuerto y cuántos puntos tiene: tótems de terminal, tótems de aduanas y kioscos de check-in.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h4>Decide el hardware</h4>
+        <p>¿Avianca ya tiene tótems propios, o los compra con nosotros? Es opcional — la licencia se cobra igual en ambos casos.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h4>Revisa la licencia por punto</h4>
+        <p>Ya está calculada según el costo humano de cada estación — siempre por debajo, nunca la tienes que fijar tú.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <h4>Estima tus minutos</h4>
+        <p>Mueve el control al volumen mensual de conversación que esperas en toda la red.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">05</div>
+        <h4>Compara y comparte</h4>
+        <p>Revisa el ahorro estación por estación, y descarga el CSV o copia el resumen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="constructor">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Constructor de escenario</div>
+      <h2>Calculadora dinámica de red</h2>
+      <p>Arranca del VASA Roadmap y ve moviendo las cantidades. Los precios y la fórmula de licencia están fijos y no se pueden editar.</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-preset="pilot">Plan piloto (3 estaciones)</button>
+      <button class="tab-btn" data-preset="regional">Expansión regional (~15 estaciones)</button>
+      <button class="tab-btn" data-preset="full">Red completa (100+ estaciones)</button>
+    </div>
+
+    <div class="builder-grid">
+      <div>
+        <div class="panel">
+          <h3>Estaciones y puntos <span class="core-tag">licencia por punto</span></h3>
+          <p class="hint">Cada estación tiene tótems de terminal, tótems de aduanas/equipaje y kioscos de check-in. Cada punto paga la licencia MetaHuman de esa estación.</p>
+          <div class="station-scroll">
+            <table class="stations">
+              <thead>
+                <tr><th>Código</th><th>Terminal</th><th>Aduanas</th><th>Check-in</th><th>Puntos</th><th>Humano/año</th><th>Licencia/año</th><th>Ahorro</th><th></th></tr>
+              </thead>
+              <tbody id="stations-body"></tbody>
+            </table>
+          </div>
+          <div class="addrow-actions">
+            <button class="small-btn" id="add-station">+ Añadir estación</button>
+            <button class="small-btn" id="add-10-stations">+ 10 estaciones genéricas</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Hardware de tótem <span class="locked-tag">🔒 opcional</span></h3>
+          <p class="hint">El hardware es independiente de la licencia. Si Avianca ya tiene tótems propios, no lo actives — solo se cobrará la licencia.</p>
+          <div class="toggle-row" style="margin-bottom:16px;">
+            <input type="checkbox" id="buy-hardware">
+            <div>
+              <div class="tlabel">Comprar el hardware de los tótems con nosotros</div>
+              <div class="tdesc">Desmarcado (por defecto) = Avianca usa su propio tótem, solo se cobra la licencia. Marcado = se añade el costo de hardware y add-ons abajo.</div>
+            </div>
+          </div>
+          <div class="addon-header-row">
+            <span></span>
+            <span class="addon-col-label">Componente</span>
+            <span class="addon-col-label">Cantidad</span>
+            <span class="addon-col-label">Precio/u.</span>
+          </div>
+          <div class="addon-row" id="row-basehw">
+            <span></span>
+            <div>
+              <div class="addon-name">Tótem — hardware base <span class="core-tag">editable</span></div>
+              <div class="addon-desc">Pantalla, chasis, cómputo embebido</div>
+            </div>
+            <input type="number" id="qty-base" value="0" disabled>
+            <input type="number" id="price-basehw" value="8500" step="50" min="0">
+          </div>
+          <div class="addon-row" id="row-camera">
+            <input type="checkbox" id="enable-camera" checked>
+            <div>
+              <div class="addon-name">Add-on: Cámara</div>
+              <div class="addon-desc">Reconocimiento facial / detección de presencia</div>
+            </div>
+            <input type="number" id="qty-camera" value="0" min="0">
+            <div class="fixed-price-chip">$450</div>
+          </div>
+          <div class="addon-row" id="row-mic">
+            <input type="checkbox" id="enable-mic" checked>
+            <div>
+              <div class="addon-name">Add-on: Micrófono</div>
+              <div class="addon-desc">Arreglo de micrófonos para conversación por voz</div>
+            </div>
+            <input type="number" id="qty-mic" value="0" min="0">
+            <div class="fixed-price-chip">$180</div>
+          </div>
+          <div class="addon-row" id="row-passport">
+            <input type="checkbox" id="enable-passport">
+            <div>
+              <div class="addon-name">Add-on: Lector de pasaporte</div>
+              <div class="addon-desc">Escáner MRZ / chip para verificación de identidad</div>
+            </div>
+            <input type="number" id="qty-passport" value="0" min="0">
+            <div class="fixed-price-chip">$1,200</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Cuota de implementación <span class="core-tag">editable</span></h3>
+          <p class="hint">Costo único de puesta en marcha por estación: configuración, integración y arranque. Varía entre $10,000 y $15,000 — o más — según los requerimientos de cada estación. En el VASA Roadmap (piloto) se aporta al proyecto y no se cobra.</p>
+          <div class="field-row">
+            <label>Cuota de implementación por estación<span class="desc">Ajusta según los requerimientos reales del proyecto (mínimo sugerido $10,000)</span></label>
+            <input type="number" id="price-implementation" value="12500" min="10000" step="500">
+          </div>
+          <div class="toggle-row">
+            <input type="checkbox" id="charge-implementation">
+            <div>
+              <div class="tlabel">Cobrar esta cuota en este escenario</div>
+              <div class="tdesc">Desmarcado = se muestra el precio pero se aporta al proyecto, no se cobra. Marcado = se factura normalmente por estación.</div>
+              <span class="contribution-badge" id="contribution-badge">Aporte al proyecto piloto — no se cobra</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Minutos conversacionales</h3>
+          <p class="hint">Volumen de conversación estimado por mes en toda la red. El precio por minuto baja por tramos según el volumen anual.</p>
+          <input type="range" id="input-minutes" min="0" max="6000000" step="10000" value="50000">
+          <div class="slider-value">
+            <span>Minutos / mes: <b id="minutes-month-label">50,000</b></span>
+            <span>Minutos / año: <b id="minutes-year-label">600,000</b></span>
+          </div>
+          <div class="rate-chip-row" style="margin-top:14px;">
+            <span class="rate-chip">Tramo 1: <b>$0.045</b>/min · hasta 6M min/año</span>
+            <span class="rate-chip">Tramo 2: <b>$0.035</b>/min · 6M–24M</span>
+            <span class="rate-chip">Tramo 3: <b>$0.025</b>/min · +24M</span>
+          </div>
+          <div class="rate-chip-row" style="margin-top:8px;">
+            <span class="rate-chip">Tu tarifa efectiva actual: <b id="effective-rate-chip">$0.045</b>/min</span>
+          </div>
+        </div>
+
+        <div class="panel" id="supuestos">
+          <h3>Lista de precios <span class="locked-tag">🔒 la mayoría fija</span></h3>
+          <p class="hint">La licencia, la plataforma y los minutos están fijos. La cuota de implementación y el hardware base de tótem son editables (arriba) porque varían según los requerimientos reales del proyecto.</p>
+          <div class="pricelist">
+            <div class="prow"><span class="pk">Licencia MetaHuman por punto <span class="core-tag">fórmula fija</span><small>35% del costo humano local de esa estación · piso $2,400/año · tope $24,000/año</small></span><span class="pv">35% · $2,400–$24,000</span></div>
+            <div class="prow"><span class="pk">Plataforma base (IA, monitoreo, soporte)<small>Fijo anual, independiente del tamaño de la red</small></span><span class="pv">$15,000/año</span></div>
+            <div class="prow"><span class="pk">Cuota de implementación <span class="core-tag">editable</span><small>Único, por estación — $10,000–$15,000 o más, aportado en el piloto</small></span><span class="pv" id="pl-implementation">$12,500</span></div>
+            <div class="prow"><span class="pk">Tótem — hardware base (opcional) <span class="core-tag">editable</span><small>Solo si se compra con nosotros</small></span><span class="pv" id="pl-hardware">$8,500</span></div>
+            <div class="prow"><span class="pk">Minuto conversacional — tramo 1<small>Hasta 6,000,000 min/año</small></span><span class="pv">$0.045/min</span></div>
+            <div class="prow"><span class="pk">Minuto conversacional — tramo 2<small>De 6,000,000 a 24,000,000 min/año</small></span><span class="pv">$0.035/min</span></div>
+            <div class="prow"><span class="pk">Minuto conversacional — tramo 3<small>Excedente sobre 24,000,000 min/año</small></span><span class="pv">$0.025/min</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sticky-col">
+        <div class="estimate-card" id="board-side">
+          <div class="estimate-head">
+            <span class="t">Resumen del escenario</span>
+            <span class="badge"><span class="dot"></span>en vivo</span>
+          </div>
+          <div class="erow"><span class="k">Estaciones activas</span><span class="v mono" data-field="stations">—</span></div>
+          <div class="erow"><span class="k">Puntos con licencia</span><span class="v mono" data-field="points">—</span></div>
+          <div class="erow"><span class="k">Licencias MetaHuman / año</span><span class="v mono" data-field="licenseTotal">—</span></div>
+          <div class="erow"><span class="k">Minutos conversacionales / año</span><span class="v mono" data-field="minutes">—</span></div>
+          <div class="erow"><span class="k">Tarifa efectiva por minuto</span><span class="v mono" data-field="effRate">—</span></div>
+          <div class="erow"><span class="k">Hardware de tótems (opcional)</span><span class="v mono" data-field="capex">—</span></div>
+          <div class="erow"><span class="k">Cuota de implementación</span><span class="v mono" data-field="implementation">—</span></div>
+          <div class="erow total"><span class="k">Costo estimado año 1</span><span class="v mono" data-field="year1">—</span></div>
+          <div class="estimate-foot">Recurrente desde año 2: <b class="mono" data-field="opex">—</b> / año</div>
+          <div class="estimate-actions">
+            <button class="link-btn" id="btn-copy">Copiar resumen</button>
+            <button class="link-btn" id="btn-csv">Descargar CSV</button>
+            <button class="link-btn" id="btn-reset">Reiniciar</button>
+          </div>
+        </div>
+
+        <div class="network-compare">
+          <h3>Tu red vs. cubrirla con personal</h3>
+          <p class="hint">Suma del costo humano de referencia (un agente por punto, turno 8h) de todas las estaciones, contra tu costo MetaHuman año 1.</p>
+          <div class="nc-row"><span>Costo humano (todos los puntos)</span><span class="v mono" data-field="netHuman">—</span></div>
+          <div class="nc-row hl"><span>Costo MetaHuman año 1 (esta red)</span><span class="v mono" data-field="netMeta">—</span></div>
+          <div class="nc-row save"><span>Ahorro estimado</span><span class="v mono" data-field="netSavings">—</span></div>
+        </div>
+
+        <div class="note">La licencia y la plataforma son recurrentes. El hardware (si se compra) y la cuota de implementación son inversión única y editables según los requerimientos reales del proyecto. El resto de precios están fijos — las cifras son supuestos de planeación, no una cotización formal.</div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:8px;">
+      <h3>Desglose detallado — costo año 1</h3>
+      <p class="hint">Cada componente, su cantidad, precio unitario y subtotal.</p>
+      <div class="sku-wrap">
+        <table class="sku-table" id="sku-table">
+          <thead>
+            <tr><th>Componente</th><th>Cantidad</th><th>Precio unitario</th><th>Subtotal</th></tr>
+          </thead>
+          <tbody id="sku-body"></tbody>
+          <tfoot>
+            <tr class="total-row"><td>Total año 1</td><td></td><td></td><td class="num" id="sku-total">—</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="brand">
+      AeroAI MetaHuman
+      <small>Planeador interno de escenarios · no es una propuesta comercial</small>
+    </div>
+    <div class="fine">Todas las cifras de costo se calculan a partir de una lista de precios fija y de una fórmula de licencia basada en el costo humano local. Antes de presentar un escenario a stakeholders o proveedores, valida las tarifas reales de costo laboral, hardware e implementación de cada país.</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // FIXED, LOCKED PRICE LIST — not user-editable
+  const PRICES = Object.freeze({
+    platform: 15000,
+    camera: 450,
+    mic: 180,
+    passport: 1200,
+    tier1Price: 0.045, tier1Limit: 6000000,
+    tier2Price: 0.035, tier2Limit: 24000000,
+    tier3Price: 0.025,
+    licenseRatio: 0.35,
+    licenseMin: 2400,
+    licenseMax: 24000,
+  });
+
+  // Reference human labor cost per point, single 8h shift, fully loaded, per year — fixed
+  const HUMAN_COST_BY_STATION = Object.freeze({
+    SAL:16000, BOG:36000, JFK:72000, PTY:32000, MIA:65000, MEX:30000,
+    GUA:18000, MDE:34000, LIM:28000, UIO:26000, SJO:20000, LIR:18000,
+    CCS:22000, GYE:26000, ORD:68000,
+  });
+  const DEFAULT_HUMAN_COST = 25000;
+
+  function humanCostFor(code){
+    return HUMAN_COST_BY_STATION[(code||'').toUpperCase()] || DEFAULT_HUMAN_COST;
+  }
+  function licensePriceFor(code){
+    const h = humanCostFor(code);
+    return Math.min(Math.max(h * PRICES.licenseRatio, PRICES.licenseMin), PRICES.licenseMax);
+  }
+
+  const state = {
+    stations: [
+      {code:'SAL', terminal:2, customs:1, checkin:5},
+      {code:'BOG', terminal:2, customs:1, checkin:5},
+      {code:'JFK', terminal:2, customs:1, checkin:5},
+    ],
+    minutesMonth: 50000,
+  };
+
+  const stationsBody = document.getElementById('stations-body');
+  const minutesInput = document.getElementById('input-minutes');
+  const minutesMonthLabel = document.getElementById('minutes-month-label');
+  const minutesYearLabel = document.getElementById('minutes-year-label');
+  const chargeImplementationInput = document.getElementById('charge-implementation');
+  const contributionBadge = document.getElementById('contribution-badge');
+  const buyHardwareInput = document.getElementById('buy-hardware');
+  const priceBasehwInput = document.getElementById('price-basehw');
+  const priceImplementationInput = document.getElementById('price-implementation');
+  const plImplementation = document.getElementById('pl-implementation');
+  const plHardware = document.getElementById('pl-hardware');
+
+  function getTotemBasePrice(){ return parseFloat(priceBasehwInput.value) || 0; }
+  function getImplementationPrice(){ return parseFloat(priceImplementationInput.value) || 0; }
+
+  priceBasehwInput.addEventListener('input', () => { plHardware.textContent = fmtMoney(getTotemBasePrice()); compute(); });
+  priceImplementationInput.addEventListener('input', () => { plImplementation.textContent = fmtMoney(getImplementationPrice()); compute(); });
+
+  function fmtNum(n){ return Math.round(n).toLocaleString('es-CR'); }
+  function fmtMoney(n){ return '$' + Math.round(n).toLocaleString('es-CR'); }
+  function fmtRate(n){ return '$' + n.toFixed(4) + '/min'; }
+
+  function minutesCost(minutesYear){
+    let remaining = minutesYear;
+    let cost = 0;
+    const tier1 = Math.min(remaining, PRICES.tier1Limit);
+    cost += tier1 * PRICES.tier1Price;
+    remaining -= tier1;
+    if(remaining > 0){
+      const tier2span = Math.max(0, PRICES.tier2Limit - PRICES.tier1Limit);
+      const tier2 = Math.min(remaining, tier2span);
+      cost += tier2 * PRICES.tier2Price;
+      remaining -= tier2;
+    }
+    if(remaining > 0){
+      cost += remaining * PRICES.tier3Price;
+    }
+    return cost;
+  }
+
+  function pointsOf(station){ return (station.terminal||0)+(station.customs||0)+(station.checkin||0); }
+
+  buyHardwareInput.addEventListener('change', () => {
+    ['row-basehw','row-camera','row-mic','row-passport'].forEach(id => document.getElementById(id).classList.toggle('dim', !buyHardwareInput.checked));
+    compute();
+  });
+  chargeImplementationInput.addEventListener('change', () => {
+    contributionBadge.style.display = chargeImplementationInput.checked ? 'none' : 'inline-flex';
+    compute();
+  });
+
+  function renderStationRows(){
+    stationsBody.innerHTML = '';
+    state.stations.forEach((s, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" data-idx="${i}" data-key="code" value="${s.code}"></td>
+        <td><input type="number" min="0" step="1" data-idx="${i}" data-key="terminal" value="${s.terminal}"></td>
+        <td><input type="number" min="0" step="1" data-idx="${i}" data-key="customs" value="${s.customs}"></td>
+        <td><input type="number" min="0" step="1" data-idx="${i}" data-key="checkin" value="${s.checkin||0}"></td>
+        <td class="cell-points" data-row="points-${i}">—</td>
+        <td class="cell-human" data-row="human-${i}">—</td>
+        <td class="cell-meta" data-row="meta-${i}">—</td>
+        <td class="cell-save" data-row="save-${i}">—</td>
+        <td><button class="row-remove" data-idx="${i}" title="Quitar estación">✕</button></td>
+      `;
+      stationsBody.appendChild(tr);
+    });
+
+    stationsBody.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        const key = e.target.dataset.key;
+        let val = e.target.value;
+        if(key !== 'code') val = parseFloat(val) || 0;
+        state.stations[idx][key] = val;
+        compute();
+      });
+    });
+    stationsBody.querySelectorAll('.row-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const idx = parseInt(e.target.dataset.idx);
+        state.stations.splice(idx, 1);
+        renderStationRows();
+        compute();
+      });
+    });
+  }
+
+  function addStation(code, terminal, customs, checkin){
+    state.stations.push({code: code || ('EST-' + String(state.stations.length+1).padStart(3,'0')), terminal: terminal ?? 4, customs: customs ?? 2, checkin: checkin ?? 2});
+  }
+
+  document.getElementById('add-station').addEventListener('click', () => {
+    addStation();
+    renderStationRows();
+    compute();
+  });
+  document.getElementById('add-10-stations').addEventListener('click', () => {
+    for(let i=0;i<10;i++) addStation();
+    renderStationRows();
+    compute();
+  });
+
+  minutesInput.addEventListener('input', () => {
+    state.minutesMonth = parseFloat(minutesInput.value)||0;
+    minutesMonthLabel.textContent = fmtNum(state.minutesMonth);
+    minutesYearLabel.textContent = fmtNum(state.minutesMonth*12);
+    compute();
+  });
+
+  ['enable-camera','enable-mic','enable-passport'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => {
+      document.getElementById('row-'+id.split('-')[1]).classList.toggle('dim', !document.getElementById(id).checked);
+      compute();
+    });
+  });
+  ['qty-camera','qty-mic','qty-passport'].forEach(id => document.getElementById(id).addEventListener('input', compute));
+
+  function setBoard(boardId, data){
+    const board = document.getElementById(boardId);
+    Object.keys(data).forEach(key => {
+      const el = board.querySelector(`[data-field="${key}"]`);
+      if(!el) return;
+      if(el.textContent !== data[key]){
+        el.textContent = data[key];
+        el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
+      }
+    });
+  }
+  function setFields(container, data){
+    Object.keys(data).forEach(key => {
+      const el = container.querySelector(`[data-field="${key}"]`);
+      if(!el) return;
+      if(el.textContent !== data[key]){
+        el.textContent = data[key];
+        el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip');
+      }
+    });
+  }
+
+  let lastSkuRows = [];
+
+  function compute(){
+    const totalStations = state.stations.length;
+    const totalTerminal = state.stations.reduce((s,x)=>s+(x.terminal||0),0);
+    const totalCustoms = state.stations.reduce((s,x)=>s+(x.customs||0),0);
+    const totalCheckin = state.stations.reduce((s,x)=>s+(x.checkin||0),0);
+    const totalTotems = totalTerminal + totalCustoms;
+    const totalPoints = totalTotems + totalCheckin;
+    const minutesYear = state.minutesMonth * 12;
+
+    document.getElementById('qty-base').value = totalTotems;
+    const buyHardware = buyHardwareInput.checked;
+    const enableCamera = document.getElementById('enable-camera').checked;
+    const enableMic = document.getElementById('enable-mic').checked;
+    const enablePassport = document.getElementById('enable-passport').checked;
+    const qtyCamera = enableCamera ? (parseFloat(document.getElementById('qty-camera').value)||0) : 0;
+    const qtyMic = enableMic ? (parseFloat(document.getElementById('qty-mic').value)||0) : 0;
+    const qtyPassport = enablePassport ? (parseFloat(document.getElementById('qty-passport').value)||0) : 0;
+    const totemBasePrice = getTotemBasePrice();
+    const implementationPrice = getImplementationPrice();
+
+    const baseHardwareCost = buyHardware ? totalTotems * totemBasePrice : 0;
+    const cameraCost = buyHardware ? qtyCamera * PRICES.camera : 0;
+    const micCost = buyHardware ? qtyMic * PRICES.mic : 0;
+    const passportCost = buyHardware ? qtyPassport * PRICES.passport : 0;
+    const hardwareTotal = baseHardwareCost + cameraCost + micCost + passportCost;
+
+    const chargeImplementation = chargeImplementationInput.checked;
+    const implementationValue = totalStations * implementationPrice;
+    const implementationCost = chargeImplementation ? implementationValue : 0;
+
+    // per-station license + human reference, and network totals
+    let totalLicenseAnnual = 0;
+    let totalHumanCost = 0;
+    state.stations.forEach((s, i) => {
+      const pts = pointsOf(s);
+      const human = humanCostFor(s.code);
+      const license = licensePriceFor(s.code);
+      const humanTotal = pts * human;
+      const licenseTotal = pts * license;
+      const save = humanTotal - licenseTotal;
+      totalLicenseAnnual += licenseTotal;
+      totalHumanCost += humanTotal;
+
+      const pointsCell = stationsBody.querySelector(`[data-row="points-${i}"]`);
+      const humanCell = stationsBody.querySelector(`[data-row="human-${i}"]`);
+      const metaCell = stationsBody.querySelector(`[data-row="meta-${i}"]`);
+      const saveCell = stationsBody.querySelector(`[data-row="save-${i}"]`);
+      if(pointsCell) pointsCell.textContent = fmtNum(pts);
+      if(humanCell) humanCell.textContent = fmtMoney(humanTotal);
+      if(metaCell) metaCell.textContent = fmtMoney(licenseTotal);
+      if(saveCell) saveCell.textContent = '+' + fmtMoney(save);
+    });
+
+    const mCost = minutesCost(minutesYear);
+    const effRate = minutesYear > 0 ? (mCost / minutesYear) : PRICES.tier1Price;
+    const capexTotal = hardwareTotal + implementationCost;
+    const opexAnnual = PRICES.platform + totalLicenseAnnual + mCost;
+    const year1 = capexTotal + opexAnnual;
+
+    const implementationLabel = chargeImplementation ? fmtMoney(implementationValue) : fmtMoney(0) + ' (aporte)';
+    const hardwareLabel = buyHardware ? fmtMoney(hardwareTotal) : fmtMoney(0) + ' (hardware propio)';
+
+    const boardData = {
+      stations: fmtNum(totalStations),
+      points: fmtNum(totalPoints),
+      licenseTotal: fmtMoney(totalLicenseAnnual),
+      minutes: fmtNum(minutesYear),
+      effRate: fmtRate(effRate),
+      capex: hardwareLabel,
+      implementation: implementationLabel,
+      year1: fmtMoney(year1),
+      opex: fmtMoney(opexAnnual),
+    };
+    setBoard('board-side', boardData);
+    document.getElementById('effective-rate-chip').textContent = '$' + effRate.toFixed(4);
+
+    const netSavings = totalHumanCost - year1;
+    const netSavingsPct = totalHumanCost > 0 ? (netSavings/totalHumanCost*100) : 0;
+    const ncBoard = document.querySelector('.network-compare');
+    setFields(ncBoard, {
+      netHuman: fmtMoney(totalHumanCost),
+      netMeta: fmtMoney(year1),
+      netSavings: fmtMoney(netSavings) + ' (' + netSavingsPct.toFixed(0) + '%)',
+    });
+
+    lastSkuRows = [
+      {name:'Licencia MetaHuman (por punto, según costo humano local)', qty:totalPoints, unit: totalPoints>0 ? totalLicenseAnnual/totalPoints : 0, sub:totalLicenseAnnual},
+      {name:'Plataforma base (IA, monitoreo, soporte)', qty:1, unit:PRICES.platform, sub:PRICES.platform},
+      {name: chargeImplementation ? 'Cuota de implementación (por estación)' : 'Cuota de implementación (por estación) — aporte al proyecto, no cobrado', qty:totalStations, unit:implementationPrice, sub:implementationCost},
+      {name: buyHardware ? 'Tótem — hardware base' : 'Tótem — hardware base (no comprado, hardware propio)', qty:totalTotems, unit:totemBasePrice, sub:baseHardwareCost},
+      {name:'Add-on: Cámara', qty:qtyCamera, unit:PRICES.camera, sub:cameraCost},
+      {name:'Add-on: Micrófono', qty:qtyMic, unit:PRICES.mic, sub:micCost},
+      {name:'Add-on: Lector de pasaporte', qty:qtyPassport, unit:PRICES.passport, sub:passportCost},
+      {name:'Minutos conversacionales', qty:minutesYear, unit:effRate, sub:mCost},
+    ];
+    renderSkuTable(lastSkuRows, year1);
+  }
+
+  function renderSkuTable(rows, total){
+    const body = document.getElementById('sku-body');
+    body.innerHTML = '';
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="comp">${r.name}</td><td class="num">${fmtNum(r.qty)}</td><td class="num">${r.unit < 1 ? '$'+r.unit.toFixed(4) : fmtMoney(r.unit)}</td><td class="num">${fmtMoney(r.sub)}</td>`;
+      body.appendChild(tr);
+    });
+    document.getElementById('sku-total').textContent = fmtMoney(total);
+  }
+
+  document.getElementById('btn-copy').addEventListener('click', () => {
+    const text = lastSkuRows.map(r => `${r.name}: ${r.qty} x ${r.unit<1?'$'+r.unit.toFixed(4):fmtMoney(r.unit)} = ${fmtMoney(r.sub)}`).join('\n')
+      + `\nTotal año 1: ${document.getElementById('sku-total').textContent}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btn-copy');
+      const old = btn.textContent;
+      btn.textContent = 'Copiado ✓';
+      setTimeout(()=>btn.textContent=old, 1500);
+    });
+  });
+
+  document.getElementById('btn-csv').addEventListener('click', () => {
+    let csv = 'Componente,Cantidad,Precio unitario,Subtotal\n';
+    lastSkuRows.forEach(r => { csv += `"${r.name}",${r.qty},${r.unit},${r.sub}\n`; });
+    csv += `"Total año 1",,,${document.getElementById('sku-total').textContent.replace('$','')}\n`;
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'aeroai-metahuman-estimado.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById('btn-reset').addEventListener('click', () => {
+    document.querySelector('.tab-btn[data-preset="pilot"]').click();
+  });
+
+  const presets = {
+    pilot(){
+      state.stations = [
+        {code:'SAL', terminal:2, customs:1, checkin:5},
+        {code:'BOG', terminal:2, customs:1, checkin:5},
+        {code:'JFK', terminal:2, customs:1, checkin:5},
+      ];
+      state.minutesMonth = 50000;
+      chargeImplementationInput.checked = false;
+      buyHardwareInput.checked = false;
+      priceImplementationInput.value = 12500;
+      priceBasehwInput.value = 8500;
+    },
+    regional(){
+      state.stations = [
+        {code:'SAL', terminal:3, customs:2, checkin:2},
+        {code:'BOG', terminal:10, customs:2, checkin:5},
+        {code:'JFK', terminal:6, customs:2, checkin:3},
+        {code:'PTY', terminal:5, customs:2, checkin:2},
+        {code:'MIA', terminal:8, customs:2, checkin:3},
+        {code:'MEX', terminal:7, customs:2, checkin:3},
+        {code:'GUA', terminal:4, customs:2, checkin:2},
+        {code:'MDE', terminal:4, customs:2, checkin:2},
+        {code:'LIM', terminal:5, customs:2, checkin:2},
+        {code:'UIO', terminal:3, customs:2, checkin:2},
+        {code:'SJO', terminal:4, customs:2, checkin:2},
+        {code:'LIR', terminal:2, customs:2, checkin:1},
+        {code:'CCS', terminal:3, customs:2, checkin:2},
+        {code:'GYE', terminal:3, customs:2, checkin:2},
+        {code:'ORD', terminal:6, customs:2, checkin:3},
+      ];
+      state.minutesMonth = 400000;
+      chargeImplementationInput.checked = true;
+      buyHardwareInput.checked = false;
+      priceImplementationInput.value = 12500;
+      priceBasehwInput.value = 8500;
+    },
+    full(){
+      const arr = [];
+      for(let i=1;i<=104;i++){
+        arr.push({code:'EST-'+String(i).padStart(3,'0'), terminal:4, customs:2, checkin:2});
+      }
+      state.stations = arr;
+      state.minutesMonth = 5000000;
+      chargeImplementationInput.checked = true;
+      buyHardwareInput.checked = false;
+      priceImplementationInput.value = 15000;
+      priceBasehwInput.value = 8500;
+    }
+  };
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      presets[btn.dataset.preset]();
+      renderStationRows();
+      minutesInput.value = state.minutesMonth;
+      minutesMonthLabel.textContent = fmtNum(state.minutesMonth);
+      minutesYearLabel.textContent = fmtNum(state.minutesMonth*12);
+      contributionBadge.style.display = chargeImplementationInput.checked ? 'none' : 'inline-flex';
+      ['row-basehw','row-camera','row-mic','row-passport'].forEach(id => document.getElementById(id).classList.toggle('dim', !buyHardwareInput.checked));
+      plImplementation.textContent = fmtMoney(getImplementationPrice());
+      plHardware.textContent = fmtMoney(getTotemBasePrice());
+
+      const totalTotems = state.stations.reduce((s,x)=>s+(x.terminal||0)+(x.customs||0),0);
+      document.getElementById('qty-camera').value = totalTotems;
+      document.getElementById('qty-mic').value = totalTotems;
+      document.getElementById('qty-passport').value = Math.round(totalTotems*0.3);
+      compute();
+    });
+  });
+
+  // static per-station comparison table (top section), based on the VASA Roadmap pilot config
+  function renderCompareTable(){
+    const pilotStations = [
+      {code:'SAL', terminal:2, customs:1, checkin:5},
+      {code:'BOG', terminal:2, customs:1, checkin:5},
+      {code:'JFK', terminal:2, customs:1, checkin:5},
+    ];
+    const body = document.getElementById('compare-body');
+    body.innerHTML = '';
+    pilotStations.forEach(s => {
+      const pts = pointsOf(s);
+      const human = humanCostFor(s.code) * pts;
+      const license = licensePriceFor(s.code) * pts;
+      const save = human - license;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="station-cell">${s.code}</td>
+        <td>${pts}</td>
+        <td class="human-cell">${fmtMoney(human)}</td>
+        <td class="meta-cell">${fmtMoney(license)}</td>
+        <td class="save-cell">+${fmtMoney(save)}</td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  renderCompareTable();
+  renderStationRows();
+  minutesMonthLabel.textContent = fmtNum(state.minutesMonth);
+  minutesYearLabel.textContent = fmtNum(state.minutesMonth*12);
+  contributionBadge.style.display = chargeImplementationInput.checked ? 'none' : 'inline-flex';
+  ['row-basehw','row-camera','row-mic','row-passport'].forEach(id => document.getElementById(id).classList.toggle('dim', !buyHardwareInput.checked));
+  const initialTotems = state.stations.reduce((s,x)=>s+(x.terminal||0)+(x.customs||0),0);
+  document.getElementById('qty-camera').value = initialTotems;
+  document.getElementById('qty-mic').value = initialTotems;
+  document.getElementById('qty-passport').value = Math.round(initialTotems*0.3);
+  compute();
+
+  // hero video: if no video file is present yet, keep the animated gradient fallback visible
+  const heroVideo = document.getElementById('hero-video');
+  if(heroVideo){
+    heroVideo.addEventListener('error', () => { heroVideo.style.display = 'none'; }, true);
+    heroVideo.addEventListener('loadeddata', () => { document.getElementById('hero-fallback-bg').style.opacity = '0.35'; });
+    // if nothing loads within a couple seconds, assume no source and rely on the fallback
+    setTimeout(() => { if(heroVideo.readyState < 2) heroVideo.style.display = 'none'; }, 2500);
+  }
+})();
+</script>
+</body>
+</html>
