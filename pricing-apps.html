@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aero AI Ground Operations Pricing Calculator</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #F6F7F9; }
+  body { font-family: 'Inter', sans-serif; overflow: hidden; }
+  #root { height: 100vh; }
+
+  .f-display { font-family: 'Space Grotesk', sans-serif; }
+  .f-body { font-family: 'Inter', sans-serif; }
+  .f-mono { font-family: 'IBM Plex Mono', monospace; }
+
+  input[type=range] { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px; background: #E4E8EE; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #0B2545; border: 3px solid white; box-shadow: 0 0 0 1px #D3D9E2; cursor: pointer; margin-top: -6px; }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #0B2545; border: 3px solid white; box-shadow: 0 0 0 1px #D3D9E2; cursor: pointer; }
+
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  button { font: inherit; background: none; border: none; cursor: pointer; padding: 0; color: inherit; }
+  input, select { font: inherit; outline: none; }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid #EE9E1E; outline-offset: 1px; }
+
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #D3D9E2; border-radius: 999px; }
+
+  /* ---- app shell: fixed-height desktop layout, left scrolls, right pricing rail stays put ---- */
+  .app-shell { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  .app-main { flex: 1 1 auto; overflow: hidden; min-height: 0; }
+  .app-main-inner { height: 100%; }
+  .app-grid { grid-template-columns: 1fr 380px; height: 100%; }
+  .app-col-left { height: 100%; overflow-y: auto; padding-right: 6px; }
+  .app-col-right { height: 100%; overflow-y: auto; padding-right: 2px; }
+
+  @media (max-width: 980px) {
+    .app-shell { height: auto; overflow: visible; }
+    .app-main { overflow: visible; }
+    .app-main-inner { height: auto; }
+    .app-grid { grid-template-columns: 1fr !important; height: auto; }
+    .app-col-left, .app-col-right { height: auto; overflow: visible; padding-right: 0; }
+  }
+
+  /* ---- minimal utility layer (Tailwind-equivalent classes actually used) ---- */
+  .flex { display: flex; }
+  .flex-1 { flex: 1 1 0%; }
+  .flex-col { flex-direction: column; }
+  .grid { display: grid; }
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .items-center { align-items: center; }
+  .items-end { align-items: flex-end; }
+  .items-start { align-items: flex-start; }
+  .justify-between { justify-content: space-between; }
+  .justify-center { justify-content: center; }
+  .justify-end { justify-content: flex-end; }
+  .text-center { text-align: center; }
+  .text-left { text-align: left; }
+  .text-right { text-align: right; }
+  .relative { position: relative; }
+  .cursor-pointer { cursor: pointer; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+
+  .gap-0\.5 { gap: 2px; }
+  .gap-1 { gap: 4px; }
+  .gap-1\.5 { gap: 6px; }
+  .gap-2 { gap: 8px; }
+  .gap-2\.5 { gap: 10px; }
+  .gap-3 { gap: 12px; }
+  .gap-5 { gap: 20px; }
+
+  .mb-1 { margin-bottom: 4px; }
+  .mb-2 { margin-bottom: 8px; }
+  .mb-4 { margin-bottom: 16px; }
+  .mb-6 { margin-bottom: 24px; }
+  .mt-2 { margin-top: 8px; }
+  .mt-3 { margin-top: 12px; }
+  .mt-4 { margin-top: 16px; }
+  .mt-6 { margin-top: 24px; }
+
+  .p-0\.5 { padding: 2px; }
+  .p-2\.5 { padding: 10px; }
+  .p-3 { padding: 12px; }
+  .pb-5 { padding-bottom: 20px; }
+  .pt-3 { padding-top: 12px; }
+  .pt-4 { padding-top: 16px; }
+  .py-2\.5 { padding-top: 10px; padding-bottom: 10px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+
+const { useState, useMemo, useCallback } = React;
+
+
+/* =========================================================================
+   DESIGN TOKENS
+   Aviation instrument-panel aesthetic on a clean enterprise-SaaS shell:
+   deep navy ink, runway-amber for "recommended/action", radar-teal for
+   healthy-margin signals, warm red for warnings. Google Cloud Calculator's
+   left-configure / right-live-price structure, dressed as a flight deck.
+   ========================================================================= */
+const C = {
+  bg: "#F6F7F9",
+  panel: "#FFFFFF",
+  panelAlt: "#FBFCFD",
+  border: "#E4E8EE",
+  borderStrong: "#D3D9E2",
+  ink: "#0B2545",
+  inkSoft: "#33445E",
+  muted: "#6B7686",
+  mutedLight: "#98A2B3",
+  amber: "#EE9E1E",
+  amberDark: "#C97F00",
+  amberSoft: "#FDF3DF",
+  teal: "#0E8C82",
+  tealDark: "#0A6A62",
+  tealSoft: "#E4F5F3",
+  red: "#D0483F",
+  redSoft: "#FBEAE9",
+  blue: "#2C5AA0",
+  blueSoft: "#EAF0F9",
+};
+
+const FONTS = (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+    .f-display { font-family: 'Space Grotesk', sans-serif; }
+    .f-body { font-family: 'Inter', sans-serif; }
+    .f-mono { font-family: 'IBM Plex Mono', monospace; }
+    input[type=range] { -webkit-appearance: none; height: 4px; border-radius: 999px; background: ${C.border}; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: ${C.ink}; border: 3px solid white; box-shadow: 0 0 0 1px ${C.borderStrong}; cursor: pointer; margin-top: -6px; }
+    input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: ${C.ink}; border: 3px solid white; box-shadow: 0 0 0 1px ${C.borderStrong}; cursor: pointer; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: ${C.borderStrong}; border-radius: 999px; }
+  `}</style>
+);
+
+/* =========================================================================
+   CENTRALIZED PRICING CONFIGURATION
+   Nothing below is hard-coded into a UI component — every UI piece reads
+   from PRICING_CONFIG. Swap this object (or point it at a DB row) to
+   repriced the whole product without touching layout code.
+   ========================================================================= */
+const PRICING_CONFIG = {
+  plans: [
+    { id: "live", name: "Live", pricePerUser: 3, includedAgents: 50, extraAgentPrice: 1.5, includedAdmin: 1, includedStorageGB: 10, sla: "48 hours", dataAccess: "Current operational data", airlinePrice: 150, recommendedFor: "Small single-station operations" },
+    { id: "week", name: "Week", pricePerUser: 4, includedAgents: 100, extraAgentPrice: 1.25, includedAdmin: 1, includedStorageGB: 50, sla: "24 hours", dataAccess: "Operational + recent history", airlinePrice: 175, recommendedFor: "Growing operations needing visibility" },
+    { id: "month", name: "Month", pricePerUser: 5, includedAgents: 100, extraAgentPrice: 0.99, includedAdmin: 1, includedStorageGB: 1024, sla: "3 hours", dataAccess: "Extended operational history", airlinePrice: 150, recommendedFor: "Professional multi-airline environments" },
+    { id: "network", name: "Network", legacyName: "Unlimited", pricePerUser: 7, includedAgents: 500, extraAgentPrice: 0.75, includedAdmin: 1, includedStorageGB: 10240, sla: "15 minutes", dataAccess: "Complete historical data", airlinePrice: 100, multiAirline: true, multiStation: true, recommendedFor: "Enterprise / multi-country networks" },
+  ],
+  platform: {
+    baseFee: 499,
+    stationFee: 250,
+    adminUserPrice: 15,
+    includedTurnarounds: 2000,
+    overagePerTurnaround: 0.15,
+    annualDiscountDefault: 10,
+  },
+  hybridExtraAgentPrice: 0.75,
+  hybridIncludedAgents: 50,
+  airlineTiers: [
+    { id: "viewer", name: "Viewer", price: 99, dataAccess: "Datos de hoy únicamente", sla: "48 horas", infra: "Servidor compartido — sujeto a delays de hasta 5 minutos en la información", features: ["Vuelos y servicios del día", "Reportes operativos de hoy", "Evidencia del día", "Datos históricos: solo hoy"] },
+    { id: "operations", name: "Operations", price: 199, dataAccess: "Últimos 7 días", sla: "24 horas", infra: "Servidor dedicado", features: ["Operaciones en tiempo real", "SLA y KPIs", "Monitoreo de demoras", "Conciliación de facturación", "Datos históricos: 7 días"] },
+    { id: "enterprise", name: "Enterprise", price: 349, dataAccess: "Historial completo", sla: "15 minutos", infra: "Servidor dedicado + licencia workspace exclusiva", features: ["Todo lo de Operations", "Acceso API", "SSO", "Integración BI", "Exportes automatizados", "Datos históricos: completos"] },
+  ],
+  modules: [
+    { id: "revenue_assurance", name: "Revenue Assurance", price: 499, desc: "Flags billable services performed but not invoiced." },
+    { id: "billing_reconciliation", name: "Billing Reconciliation", price: 299, desc: "Matches services performed against airline billing." },
+    { id: "sgha_intelligence", name: "SGHA Intelligence", price: 499, desc: "Reads SGHA contracts for rates, clauses and SLA rules." },
+    { id: "ai_operations", name: "AI Operations", price: 299, desc: "AI copilot across ramp workflows." },
+    { id: "workforce_management", name: "Workforce Management", price: 299, desc: "Scheduling, credentials and overtime." },
+    { id: "wheelchair_operations", name: "WCH Operations", price: 250, desc: "Wheelchair assistance reporting & billing." },
+    { id: "sms_safety", name: "SMS & Safety", price: 299, desc: "Safety reporting with photo evidence." },
+    { id: "gse_management", name: "GSE Management", price: 299, desc: "Ground support equipment tracking." },
+    { id: "delay_intelligence", name: "Delay Intelligence", price: 399, desc: "IATA delay-code analytics & alerting." },
+    { id: "executive_analytics", name: "Executive Analytics", price: 199, desc: "Cross-station executive dashboards." },
+  ],
+  integrations: [
+    { id: "rest", name: "Generic REST API", setup: 1500, maint: 150 },
+    { id: "aodb", name: "AODB Integration", setup: 3000, maint: 250 },
+    { id: "sita", name: "SITA Integration", setup: 5000, maint: 350 },
+    { id: "amadeus", name: "Amadeus Integration", setup: 5000, maint: 350 },
+    { id: "erp", name: "ERP / SAP Integration", setup: 5000, maint: 500 },
+    { id: "bi", name: "Power BI / Looker Integration", setup: 1500, maint: 100 },
+    { id: "sso", name: "SSO", setup: 1500, maint: 100 },
+  ],
+  implementation: [
+    { id: "included", name: "Incluido", price: 0, includes: ["Sin cargo adicional — incluido en el contrato"] },
+    { id: "standard", name: "Standard", price: 1500, includes: ["Platform configuration", "Station setup", "Users & airlines", "Basic training"] },
+    { id: "professional", name: "Professional", price: 5000, includes: ["Multiple workflows", "Multiple airlines", "Data migration", "Advanced training"] },
+    { id: "enterprise", name: "Enterprise", price: 10000, includes: ["Multi-station / multi-country rollout", "Integrations", "SSO & API", "Dedicated implementation manager"] },
+  ],
+  cloud: {
+    storageCostPerGB: 0.023,
+    computePerTurnaround: 0.006,
+    dbPerReport: 0.004,
+    aiPerReport: 0.03,
+    networkPerReport: 0.0015,
+    monitoringBase: 60,
+    securityBase: 90,
+    costPerAgent: 0.42,
+    claudeCostPerMillionTokens: 3.5,
+  },
+  usageMargin: 2, // internal pricing multiplier for usage-based components
+  internal: {
+    supportHourlyCost: 22,
+    engineeringHourlyCost: 55,
+    accountMgmtFlat: 350,
+  },
+  currencies: { USD: "$", EUR: "€", CRC: "₡", COP: "$", MXN: "$" },
+  marginTargets: { warn: 50, healthy: 70 },
+};
+
+const MODEL_LABEL = { legacy_user_based: "Per-User", platform_based: "Platform", hybrid: "Hybrid SaaS" };
+
+/* =========================================================================
+   CALCULATION ENGINE — every formula lives here, centralized, pure.
+   ========================================================================= */
+const CalcEngine = {
+  getTotalOps(customer) {
+    return (customer.turnFlights || 0) + (customer.ronArrivalFlights || 0) + (customer.ronDepartureFlights || 0);
+  },
+
+  calculateBaseSubscription(s) {
+    const cfg = PRICING_CONFIG;
+    const { customer, model, planId } = s;
+    if (model === "legacy_user_based") {
+      const plan = cfg.plans.find((p) => p.id === planId) || cfg.plans[0];
+      const agentsIncluded = Math.min(customer.rampAgents, plan.includedAgents);
+      const agentsOver = Math.max(0, customer.rampAgents - plan.includedAgents);
+      const agentIncludedCost = agentsIncluded * plan.pricePerUser;
+      const agentOverCost = agentsOver * plan.extraAgentPrice;
+      const adminOver = Math.max(0, customer.adminUsers - plan.includedAdmin);
+      const adminCost = adminOver * plan.pricePerUser;
+      const items = [
+        { label: `Plan ${plan.name} — ${agentsIncluded} agentes incluidos`, amount: agentIncludedCost },
+      ];
+      if (agentOverCost > 0) items.push({ label: `Agentes de rampa adicionales (${agentsOver})`, amount: agentOverCost });
+      if (adminCost > 0) items.push({ label: `Usuarios administrativos adicionales`, amount: adminCost });
+      return { amount: agentIncludedCost + agentOverCost + adminCost, items, plan };
+    }
+    if (model === "platform_based") {
+      const p = cfg.platform;
+      const stationCost = Math.max(0, customer.stations - 1) * p.stationFee;
+      const adminCost = customer.adminUsers * p.adminUserPrice;
+      const items = [{ label: "Tarifa base de plataforma", amount: p.baseFee }];
+      if (stationCost > 0) items.push({ label: `Estaciones adicionales (${customer.stations - 1})`, amount: stationCost });
+      if (adminCost > 0) items.push({ label: `Usuarios administrativos (${customer.adminUsers})`, amount: adminCost });
+      return { amount: p.baseFee + stationCost + adminCost, items };
+    }
+    // hybrid
+    const p = cfg.platform;
+    const items = [{ label: "Tarifa base de plataforma (Hybrid)", amount: p.baseFee }];
+    return { amount: p.baseFee, items };
+  },
+
+  calculateAirlinePortalCost(s) {
+    const cfg = PRICING_CONFIG;
+    if (s.model === "legacy_user_based") {
+      const plan = cfg.plans.find((p) => p.id === s.planId) || cfg.plans[0];
+      return s.customer.airlines * plan.airlinePrice;
+    }
+    const tier = cfg.airlineTiers.find((t) => t.id === s.airlineTierId) || cfg.airlineTiers[0];
+    return s.customer.airlines * tier.price;
+  },
+
+  // Usage-based components — only priced dynamically for Platform / Hybrid architectures.
+  // Every unit here scales directly with the Step 1 inputs (agents, images/weight, flight
+  // volume, AI tokens) and carries a fixed internal multiplier over its underlying cost.
+  calculateUsageBasedPricing(s) {
+    const cfg = PRICING_CONFIG;
+    const cloud = cfg.cloud;
+    const margin = cfg.usageMargin;
+    if (s.model === "legacy_user_based") {
+      return { agentsPrice: 0, operationsPrice: 0, storagePrice: 0, tokensPrice: 0, total: 0, billableAgents: 0, gb: 0, totalOps: 0 };
+    }
+    const customer = s.customer;
+    const totalOps = CalcEngine.getTotalOps(customer);
+    const gb = CalcEngine.estimateStorageGB(customer);
+
+    let billableAgents = customer.rampAgents;
+    if (s.model === "hybrid") billableAgents = Math.max(0, customer.rampAgents - cfg.hybridIncludedAgents);
+    const agentsPrice = margin * billableAgents * cloud.costPerAgent;
+
+    const opsBaseCost = totalOps * cloud.computePerTurnaround + customer.monthlyReports * (cloud.dbPerReport + cloud.aiPerReport + cloud.networkPerReport);
+    const operationsPrice = margin * opsBaseCost;
+
+    const storagePrice = margin * gb * cloud.storageCostPerGB;
+
+    const tokensPrice = margin * (customer.aiTokensMillions || 0) * cloud.claudeCostPerMillionTokens;
+
+    return {
+      agentsPrice, operationsPrice, storagePrice, tokensPrice,
+      total: agentsPrice + operationsPrice + storagePrice + tokensPrice,
+      billableAgents, gb, totalOps,
+    };
+  },
+
+  calculateModuleLineItems(s) {
+    return PRICING_CONFIG.modules
+      .filter((m) => s.modules.includes(m.id))
+      .map((m) => {
+        if (m.id === "revenue_assurance") {
+          const base = s.revenueAssuranceBase || 0;
+          return { label: "Revenue Assurance (10% de ingresos facturados vía la app)", amount: base * 0.1 };
+        }
+        return { label: m.name, amount: m.price };
+      });
+  },
+
+  calculateModuleCost(s) {
+    return CalcEngine.calculateModuleLineItems(s).reduce((sum, m) => sum + m.amount, 0);
+  },
+
+  calculateIntegrationCost(s) {
+    const list = PRICING_CONFIG.integrations.filter((i) => s.integrations.includes(i.id));
+    const setup = list.reduce((sum, i) => sum + i.setup, 0);
+    const maintenance = list.reduce((sum, i) => sum + i.maint, 0);
+    return { setup, maintenance };
+  },
+
+  calculateIntegrationLineItems(s) {
+    return PRICING_CONFIG.integrations
+      .filter((i) => s.integrations.includes(i.id))
+      .map((i) => ({ label: `${i.name} (mantenimiento)`, amount: i.maint }));
+  },
+
+  estimateStorageGB(customer) {
+    return (customer.monthlyReports * customer.imagesPerReport * customer.avgImageSizeMB) / 1024;
+  },
+
+  calculateCloudCost(s) {
+    const cfg = PRICING_CONFIG.cloud;
+    const { customer, cloudOverrides } = s;
+    const totalOps = CalcEngine.getTotalOps(customer);
+    const gb = CalcEngine.estimateStorageGB(customer);
+    const storage = gb * (cloudOverrides.storageCostPerGB ?? cfg.storageCostPerGB);
+    const compute = totalOps * (cloudOverrides.computePerTurnaround ?? cfg.computePerTurnaround);
+    const database = customer.monthlyReports * (cloudOverrides.dbPerReport ?? cfg.dbPerReport);
+    const ai = customer.monthlyReports * (cloudOverrides.aiPerReport ?? cfg.aiPerReport);
+    const network = customer.monthlyReports * (cloudOverrides.networkPerReport ?? cfg.networkPerReport);
+    const monitoring = cloudOverrides.monitoringBase ?? cfg.monitoringBase;
+    const security = cloudOverrides.securityBase ?? cfg.securityBase;
+    const total = storage + compute + database + ai + network + monitoring + security;
+    return { storage, compute, database, ai, network, monitoring, security, total, storageGB: gb };
+  },
+
+  calculateSupportCost(s) {
+    const rate = s.internalOverrides.supportHourlyCost ?? PRICING_CONFIG.internal.supportHourlyCost;
+    return s.supportHoursPerMonth * rate;
+  },
+
+  calculateEngineeringCost(s) {
+    const rate = s.internalOverrides.engineeringHourlyCost ?? PRICING_CONFIG.internal.engineeringHourlyCost;
+    return s.engineeringHoursPerMonth * rate;
+  },
+
+  calculateCostToServe(s) {
+    const cloud = CalcEngine.calculateCloudCost(s);
+    const support = CalcEngine.calculateSupportCost(s);
+    const engineering = CalcEngine.calculateEngineeringCost(s);
+    const integrations = CalcEngine.calculateIntegrationCost(s);
+    const accountMgmt = s.internalOverrides.accountMgmtFlat ?? PRICING_CONFIG.internal.accountMgmtFlat;
+    const total = cloud.total + support + engineering + integrations.maintenance + accountMgmt;
+    return { cloud, support, engineering, integrationMaintenance: integrations.maintenance, accountMgmt, total };
+  },
+
+  calculateDiscountImpact(listMonthly, discountPct) {
+    const discounted = listMonthly * (1 - discountPct / 100);
+    return { list: listMonthly, discounted, savedAmount: listMonthly - discounted, discountPct };
+  },
+
+  // Full line-by-line breakdown shown in the live pricing rail. Every entry here
+  // sums exactly to the pre-discount monthly list price.
+  buildLineItems(s) {
+    const items = [];
+    const base = CalcEngine.calculateBaseSubscription(s);
+    items.push(...base.items);
+
+    const usage = CalcEngine.calculateUsageBasedPricing(s);
+    if (usage.agentsPrice > 0) items.push({ label: `Agentes de rampa (${usage.billableAgents})`, amount: usage.agentsPrice });
+    if (usage.operationsPrice > 0) items.push({ label: `Operaciones de vuelo — TURN/RON (${usage.totalOps}/mes)`, amount: usage.operationsPrice });
+    if (usage.storagePrice > 0) items.push({ label: `Evidencia y almacenamiento (${usage.gb.toFixed(1)} GB/mes)`, amount: usage.storagePrice });
+    if (usage.tokensPrice > 0) items.push({ label: `Tokens IA (${s.customer.aiTokensMillions || 0}M/mes)`, amount: usage.tokensPrice });
+
+    const airline = CalcEngine.calculateAirlinePortalCost(s);
+    if (airline > 0) items.push({ label: `Portal de aerolíneas (${s.customer.airlines})`, amount: airline });
+
+    items.push(...CalcEngine.calculateModuleLineItems(s));
+    items.push(...CalcEngine.calculateIntegrationLineItems(s));
+
+    const impl = PRICING_CONFIG.implementation.find((i) => i.id === s.implementationId) || PRICING_CONFIG.implementation[0];
+    items.push({ label: impl.id === "included" ? "Implementación (incluida)" : `Implementación — ${impl.name}`, amount: impl.price });
+
+    const listMonthly = items.reduce((sum, it) => sum + it.amount, 0);
+    return { items, listMonthly };
+  },
+
+  calculateMRR(s) {
+    const { items, listMonthly } = CalcEngine.buildLineItems(s);
+    const discountPct = s.discountPct || 0;
+    const { discounted } = CalcEngine.calculateDiscountImpact(listMonthly, discountPct);
+    return { items, listMonthly, mrr: discounted, discountPct };
+  },
+
+  calculateARR(mrr) {
+    return mrr * 12;
+  },
+
+  calculateImplementationRevenue(s) {
+    const pkg = PRICING_CONFIG.implementation.find((i) => i.id === s.implementationId) || PRICING_CONFIG.implementation[0];
+    const integrationSetup = CalcEngine.calculateIntegrationCost(s).setup;
+    return { packagePrice: pkg.price, integrationSetup, total: pkg.price + integrationSetup, pkg };
+  },
+
+  calculateTCV(mrr, s) {
+    const arr = CalcEngine.calculateARR(mrr);
+    const impl = CalcEngine.calculateImplementationRevenue(s).total;
+    const years = s.contractMonths / 12;
+    return arr * years + impl;
+  },
+
+  calculateGrossMargin(mrr, costToServeMonthly) {
+    if (mrr <= 0) return { marginAmount: -costToServeMonthly, marginPct: -100 };
+    const marginAmount = mrr - costToServeMonthly;
+    const marginPct = (marginAmount / mrr) * 100;
+    return { marginAmount, marginPct };
+  },
+
+  calculateROI(s, annualPlatformCost) {
+    const r = s.roi;
+    const fteSavings = r.ftes * r.fteMonthlyCost * 12 * (r.efficiencyPct / 100);
+    const recoveredRevenue = r.annualRevenue * (r.leakagePct / 100) * (r.recoveryPct / 100);
+    const reconciliationSavings = r.reconciliationHours * r.laborCostPerHour * 12 * (r.reconciliationReductionPct / 100);
+    const penaltySavings = r.monthlyPenalties * 12 * (r.penaltyReductionPct / 100);
+    const totalBenefit = fteSavings + recoveredRevenue + reconciliationSavings + penaltySavings;
+    const netBenefit = totalBenefit - annualPlatformCost;
+    const roiPct = annualPlatformCost > 0 ? (netBenefit / annualPlatformCost) * 100 : 0;
+    const paybackMonths = totalBenefit > 0 ? annualPlatformCost / (totalBenefit / 12) : Infinity;
+    return { fteSavings, recoveredRevenue, reconciliationSavings, penaltySavings, totalBenefit, netBenefit, roiPct, paybackMonths };
+  },
+
+  recommendPricingModel(customer) {
+    const complexity = customer.stations > 1 || customer.airlines > 3 || customer.rampAgents > 150;
+    if (complexity) return "platform_based";
+    if (customer.rampAgents > 400) return "network";
+    return "legacy_user_based";
+  },
+
+  recommendPlan(customer) {
+    if (customer.stations > 1 || customer.airlines > 4 || customer.rampAgents > 300) return "network";
+    if (customer.rampAgents > 100 || customer.airlines > 2) return "month";
+    if (customer.rampAgents > 50) return "week";
+    return "live";
+  },
+
+  computeAll(s) {
+    const mrrParts = CalcEngine.calculateMRR(s);
+    const arr = CalcEngine.calculateARR(mrrParts.mrr);
+    const costToServe = CalcEngine.calculateCostToServe(s);
+    const margin = CalcEngine.calculateGrossMargin(mrrParts.mrr, costToServe.total);
+    const implementation = CalcEngine.calculateImplementationRevenue(s);
+    const tcv = CalcEngine.calculateTCV(mrrParts.mrr, s);
+    const roi = CalcEngine.calculateROI(s, arr);
+    const totalOps = CalcEngine.getTotalOps(s.customer);
+    const revPerStation = s.customer.stations > 0 ? arr / s.customer.stations : 0;
+    const revPerAirline = s.customer.airlines > 0 ? arr / s.customer.airlines : 0;
+    const revPerAgent = s.customer.rampAgents > 0 ? arr / s.customer.rampAgents : 0;
+    const revPerTurnaround = totalOps > 0 ? mrrParts.mrr / totalOps : 0;
+    const recommendedModel = CalcEngine.recommendPricingModel(s.customer);
+    const recommendedPlan = CalcEngine.recommendPlan(s.customer);
+    return { mrrParts, arr, costToServe, margin, implementation, tcv, roi, revPerStation, revPerAirline, revPerAgent, revPerTurnaround, recommendedModel, recommendedPlan };
+  },
+};
+
+/* =========================================================================
+   SCENARIO FACTORY & DEFAULTS
+   ========================================================================= */
+function makeScenario(overrides) {
+  return {
+    id: "default",
+    customer: {
+      companyName: "Example Ground Handler",
+      country: "Costa Rica",
+      currency: "USD",
+      stations: 1,
+      rampAgents: 50,
+      adminUsers: 1,
+      airlines: 1,
+      turnFlights: 350,
+      ronArrivalFlights: 75,
+      ronDepartureFlights: 75,
+      monthlyReports: 5000,
+      imagesPerReport: 3,
+      avgImageSizeMB: 0.5,
+      aiTokensMillions: 2,
+      ...overrides.customer,
+    },
+    model: overrides.model || "legacy_user_based",
+    planId: overrides.planId || "live",
+    airlineTierId: overrides.airlineTierId || "viewer",
+    modules: overrides.modules || [],
+    revenueAssuranceBase: overrides.revenueAssuranceBase ?? 10000,
+    integrations: overrides.integrations || [],
+    implementationId: overrides.implementationId || "standard",
+    contractMonths: overrides.contractMonths ?? 12,
+    discountPct: overrides.discountPct ?? 0,
+    promoCode: overrides.promoCode || "",
+    cloudOverrides: overrides.cloudOverrides || {},
+    internalOverrides: overrides.internalOverrides || {},
+    supportHoursPerMonth: overrides.supportHoursPerMonth ?? 8,
+    engineeringHoursPerMonth: overrides.engineeringHoursPerMonth ?? 6,
+    roi: {
+      ftes: 2, fteMonthlyCost: 1400, efficiencyPct: 20,
+      annualRevenue: 3000000, leakagePct: 2, recoveryPct: 60,
+      reconciliationHours: 30, laborCostPerHour: 12, reconciliationReductionPct: 50,
+      monthlyPenalties: 1500, penaltyReductionPct: 40,
+      ...overrides.roi,
+    },
+  };
+}
+
+const DEFAULT_SCENARIO = makeScenario({
+  customer: { companyName: "Example Ground Handler", stations: 3, rampAgents: 300, adminUsers: 12, airlines: 8, turnFlights: 3150, ronArrivalFlights: 675, ronDepartureFlights: 675, monthlyReports: 12000, imagesPerReport: 3, avgImageSizeMB: 0.5, aiTokensMillions: 6 },
+  model: "platform_based", airlineTierId: "operations",
+  modules: ["revenue_assurance", "executive_analytics"], revenueAssuranceBase: 22000, integrations: ["bi"], implementationId: "professional",
+  contractMonths: 12, discountPct: 0,
+  roi: { ftes: 4, efficiencyPct: 22, annualRevenue: 12000000, recoveryPct: 55, reconciliationHours: 60, reconciliationReductionPct: 45, monthlyPenalties: 4000, penaltyReductionPct: 40 },
+});
+
+/* =========================================================================
+   FORMAT HELPERS
+   ========================================================================= */
+function fmtMoney(n, currency = "USD", decimals = 0) {
+  const sym = PRICING_CONFIG.currencies[currency] || "$";
+  const v = Number.isFinite(n) ? n : 0;
+  return `${sym}${v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+}
+function fmtNum(n, decimals = 0) {
+  const v = Number.isFinite(n) ? n : 0;
+  return v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function fmtPct(n, decimals = 1) {
+  const v = Number.isFinite(n) ? n : 0;
+  return `${v.toFixed(decimals)}%`;
+}
+
+/* =========================================================================
+   ICONS — small hand-authored SVG glyphs (no external icon library needed).
+   ========================================================================= */
+function Icon({ name, size = 16, color = "currentColor", strokeWidth = 2, style }) {
+  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth, strokeLinecap: "round", strokeLinejoin: "round", style };
+  switch (name) {
+    case "plane":
+      return <svg {...common} fill={color} stroke="none"><polygon points="2,12 22,4 14,22 11,13" /></svg>;
+    case "gauge":
+      return <svg {...common}><path d="M4 16a8 8 0 1 1 16 0" /><line x1="12" y1="16" x2="16.5" y2="10.5" /><circle cx="12" cy="16" r="1.2" fill={color} stroke="none" /></svg>;
+    case "plus":
+      return <svg {...common}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>;
+    case "minus":
+      return <svg {...common}><line x1="5" y1="12" x2="19" y2="12" /></svg>;
+    case "copy":
+      return <svg {...common}><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V5a2 2 0 0 1 2-2h10" /></svg>;
+    case "reset":
+      return <svg {...common}><path d="M4 12a8 8 0 1 1 2.6 5.9" /><polyline points="3 17 3.5 12.5 8 13" /></svg>;
+    case "eye":
+      return <svg {...common}><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" /><circle cx="12" cy="12" r="3" /></svg>;
+    case "eye-off":
+      return <svg {...common}><path d="M6 6C3.4 8 1 12 1 12s4 7 11 7c2.2 0 4.1-.6 5.7-1.5M20.8 15.4C22.4 13.8 23 12 23 12s-4-7-11-7c-.9 0-1.8.1-2.6.3" /><line x1="1" y1="1" x2="23" y2="23" /></svg>;
+    case "alert-triangle":
+      return <svg {...common}><polygon points="12,2 1,21 23,21" /><line x1="12" y1="9" x2="12" y2="14.5" /><circle cx="12" cy="17.5" r="0.6" fill={color} stroke="none" /></svg>;
+    case "check-circle":
+      return <svg {...common}><circle cx="12" cy="12" r="10" /><polyline points="8 12 11 15 16 9" /></svg>;
+    case "info":
+      return <svg {...common}><circle cx="12" cy="12" r="10" /><line x1="12" y1="11" x2="12" y2="16" /><circle cx="12" cy="7.5" r="0.6" fill={color} stroke="none" /></svg>;
+    case "cloud":
+      return <svg {...common}><circle cx="8" cy="14" r="4" /><circle cx="13" cy="10.5" r="5" /><circle cx="17" cy="14.5" r="3.3" /><rect x="5" y="14" width="14" height="4.5" rx="2.2" /></svg>;
+    case "settings":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="3" />
+          <line x1="12" y1="2" x2="12" y2="5" /><line x1="12" y1="19" x2="12" y2="22" />
+          <line x1="2" y1="12" x2="5" y2="12" /><line x1="19" y1="12" x2="22" y2="12" />
+          <line x1="4.9" y1="4.9" x2="7" y2="7" /><line x1="17" y1="17" x2="19.1" y2="19.1" />
+          <line x1="4.9" y1="19.1" x2="7" y2="17" /><line x1="17" y1="7" x2="19.1" y2="4.9" />
+        </svg>
+      );
+    case "trending-up":
+      return <svg {...common}><polyline points="3 17 9 11 13 15 21 6" /><polyline points="15 6 21 6 21 12" /></svg>;
+    case "scale":
+      return <svg {...common}><line x1="12" y1="4" x2="12" y2="20" /><line x1="4" y1="8" x2="20" y2="8" /><circle cx="4.5" cy="13" r="3" /><circle cx="19.5" cy="13" r="3" /><line x1="8" y1="21" x2="16" y2="21" /></svg>;
+    case "file-text":
+      return <svg {...common}><rect x="5" y="3" width="14" height="18" rx="2" /><line x1="8" y1="8" x2="16" y2="8" /><line x1="8" y1="12" x2="16" y2="12" /><line x1="8" y1="16" x2="13" y2="16" /></svg>;
+    case "sparkles":
+      return <svg {...common} fill={color} stroke="none"><path d="M12 2l1.4 5.6L19 9l-5.6 1.4L12 16l-1.4-5.6L5 9l5.6-1.4z" /><circle cx="19" cy="18" r="1.3" /></svg>;
+    case "radar":
+      return <svg {...common}><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1" fill={color} stroke="none" /><line x1="12" y1="12" x2="18.5" y2="6.5" /></svg>;
+    default:
+      return null;
+  }
+}
+
+/* =========================================================================
+   SMALL UI PRIMITIVES
+   ========================================================================= */
+function Card({ children, style, className = "" }) {
+  return (
+    <div className={className} style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 14, ...style }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionLabel({ eyebrow, title, right }) {
+  return (
+    <div className="flex items-end justify-between mb-4">
+      <div>
+        {eyebrow && (
+          <div className="f-mono" style={{ fontSize: 11, letterSpacing: "0.12em", color: C.amberDark, fontWeight: 600, marginBottom: 4 }}>
+            {eyebrow.toUpperCase()}
+          </div>
+        )}
+        <div className="f-display" style={{ fontSize: 18, fontWeight: 600, color: C.ink }}>{title}</div>
+      </div>
+      {right}
+    </div>
+  );
+}
+
+function Stepper({ value, onChange, min = 0, max = 999999, step = 1, suffix = "" }) {
+  return (
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => onChange(Math.max(min, value - step))}
+        className="flex items-center justify-center"
+        style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, background: C.panelAlt, color: C.inkSoft }}
+      >
+        <Icon name="minus" size={14} />
+      </button>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => {
+          const v = Number(e.target.value);
+          if (!Number.isNaN(v)) onChange(Math.min(max, Math.max(min, v)));
+        }}
+        className="f-mono text-center"
+        style={{ width: 76, height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, fontSize: 13, fontWeight: 600, color: C.ink }}
+      />
+      {suffix && <span className="f-body" style={{ fontSize: 12, color: C.muted }}>{suffix}</span>}
+      <button
+        onClick={() => onChange(Math.min(max, value + step))}
+        className="flex items-center justify-center"
+        style={{ width: 30, height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, background: C.panelAlt, color: C.inkSoft }}
+      >
+        <Icon name="plus" size={14} />
+      </button>
+    </div>
+  );
+}
+
+function FieldRow({ label, tooltip, children }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${C.border}` }}>
+      <div className="flex items-center gap-1.5 relative">
+        <span className="f-body" style={{ fontSize: 13, color: C.inkSoft, fontWeight: 500 }}>{label}</span>
+        {tooltip && (
+          <span
+            onMouseEnter={() => setShow(true)}
+            onMouseLeave={() => setShow(false)}
+            style={{ color: C.mutedLight, cursor: "help" }}
+          >
+            <Icon name="info" size={13} />
+            {show && (
+              <span
+                className="f-body"
+                style={{ position: "absolute", left: 0, top: 20, zIndex: 20, background: C.ink, color: "white", fontSize: 11.5, padding: "8px 10px", borderRadius: 8, width: 220, lineHeight: 1.4, boxShadow: "0 8px 24px rgba(0,0,0,0.18)" }}
+              >
+                {tooltip}
+              </span>
+            )}
+          </span>
+        )}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Segmented({ options, value, onChange }) {
+  return (
+    <div className="flex p-0.5 gap-0.5" style={{ background: C.panelAlt, border: `1px solid ${C.border}`, borderRadius: 10 }}>
+      {options.map((opt) => {
+        const active = opt.value === value;
+        return (
+          <button
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className="f-body"
+            style={{
+              padding: "6px 12px", fontSize: 12.5, fontWeight: 600, borderRadius: 8, transition: "all .15s",
+              background: active ? C.ink : "transparent", color: active ? "white" : C.muted,
+            }}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Toggle({ checked, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      style={{ width: 38, height: 22, borderRadius: 999, background: checked ? C.teal : C.borderStrong, position: "relative", transition: "background .15s", flexShrink: 0 }}
+    >
+      <span style={{ position: "absolute", top: 2, left: checked ? 18 : 2, width: 18, height: 18, borderRadius: "50%", background: "white", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
+    </button>
+  );
+}
+
+function Checkline({ checked, onChange, title, sub, price, currency }) {
+  return (
+    <label
+      className="flex items-start gap-3 p-3 cursor-pointer"
+      style={{ border: `1px solid ${checked ? C.ink : C.border}`, borderRadius: 10, background: checked ? C.panelAlt : "white", transition: "all .12s" }}
+    >
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ marginTop: 3, accentColor: C.ink }} />
+      <div className="flex-1">
+        <div className="flex items-center justify-between">
+          <span className="f-body" style={{ fontSize: 13.5, fontWeight: 600, color: C.ink }}>{title}</span>
+          <span className="f-mono" style={{ fontSize: 12.5, fontWeight: 600, color: C.inkSoft }}>{fmtMoney(price, currency)}/mo</span>
+        </div>
+        {sub && <div className="f-body" style={{ fontSize: 11.5, color: C.muted, marginTop: 2, lineHeight: 1.4 }}>{sub}</div>}
+      </div>
+    </label>
+  );
+}
+
+function MetricTile({ label, value, sub, tone }) {
+  const toneColor = tone === "good" ? C.teal : tone === "bad" ? C.red : C.ink;
+  return (
+    <div style={{ padding: "12px 14px", borderRadius: 10, background: C.panelAlt, border: `1px solid ${C.border}` }}>
+      <div className="f-body" style={{ fontSize: 11, color: C.muted, fontWeight: 600, letterSpacing: "0.02em" }}>{label}</div>
+      <div className="f-mono" style={{ fontSize: 19, fontWeight: 600, color: toneColor, marginTop: 3 }}>{value}</div>
+      {sub && <div className="f-body" style={{ fontSize: 11, color: C.mutedLight, marginTop: 2 }}>{sub}</div>}
+    </div>
+  );
+}
+
+/* =========================================================================
+   MAIN APP
+   ========================================================================= */
+function App() {
+  const [scenario, setScenario] = useState(DEFAULT_SCENARIO);
+  const [salesMode, setSalesMode] = useState("internal"); // internal | customer
+
+  const results = useMemo(() => CalcEngine.computeAll(scenario), [scenario]);
+
+  const updateActive = useCallback((patch) => {
+    setScenario((s) => ({ ...s, ...(typeof patch === "function" ? patch(s) : patch) }));
+  }, []);
+  const updateCustomer = (patch) => updateActive((s) => ({ customer: { ...s.customer, ...patch } }));
+
+  const toggleInArray = (key, id) =>
+    updateActive((s) => ({ [key]: s[key].includes(id) ? s[key].filter((x) => x !== id) : [...s[key], id] }));
+
+  const resetScenario = () => setScenario(DEFAULT_SCENARIO);
+
+  const currency = scenario.customer.currency;
+
+  return (
+    <div className="app-shell f-body" style={{ background: C.bg, color: C.ink }}>
+      {FONTS}
+      <TopBar
+        salesMode={salesMode}
+        setSalesMode={setSalesMode}
+        onReset={resetScenario}
+      />
+
+      <div className="app-main">
+        <div className="mx-auto app-main-inner" style={{ maxWidth: 1440, padding: "20px 24px" }}>
+          <div className="grid app-grid" style={{ gap: 20 }}>
+            <div className="app-col-left scrollbar-thin">
+              <ConfigureTab
+                scenario={scenario}
+                updateCustomer={updateCustomer}
+                updateActive={updateActive}
+                toggleInArray={toggleInArray}
+                results={results}
+              />
+            </div>
+
+            <div className="app-col-right scrollbar-thin">
+              <PricingRail
+                scenario={scenario}
+                results={results}
+                salesMode={salesMode}
+                currency={currency}
+                updateActive={updateActive}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   TOP BAR
+   ========================================================================= */
+function TopBar({ salesMode, setSalesMode, onReset }) {
+  return (
+    <div style={{ background: C.ink, color: "white" }}>
+      <div className="mx-auto flex items-center justify-between" style={{ maxWidth: 1440, padding: "14px 24px" }}>
+        <div className="flex items-center gap-3">
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: C.amber, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="plane" size={18} color={C.ink} strokeWidth={2.4} />
+          </div>
+          <div>
+            <div className="f-display" style={{ fontSize: 15.5, fontWeight: 700, lineHeight: 1.1 }}>Aero AI Pricing Console</div>
+            <div className="f-mono" style={{ fontSize: 10.5, color: "#9FB3D1", letterSpacing: "0.06em" }}>GROUND OPERATIONS · COMMERCIAL PRICING CALCULATOR</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button onClick={onReset} title="Reset to defaults" className="flex items-center gap-1.5" style={{ padding: "7px 10px", borderRadius: 9, fontSize: 12, background: "rgba(255,255,255,0.06)", color: "#C7D3E5", border: "1px solid rgba(255,255,255,0.12)" }}>
+            <Icon name="reset" size={13} /> Reset
+          </button>
+          <div style={{ width: 1, height: 22, background: "rgba(255,255,255,0.15)", margin: "0 4px" }} />
+          <button
+            onClick={() => setSalesMode(salesMode === "internal" ? "customer" : "internal")}
+            className="flex items-center gap-1.5"
+            style={{ padding: "7px 12px", borderRadius: 9, fontSize: 12, fontWeight: 600, background: salesMode === "internal" ? "rgba(238,158,30,0.16)" : "rgba(14,140,130,0.18)", color: salesMode === "internal" ? C.amber : "#5FD6C8", border: `1px solid ${salesMode === "internal" ? "rgba(238,158,30,0.35)" : "rgba(95,214,200,0.3)"}` }}
+          >
+            {salesMode === "internal" ? <Icon name="eye" size={13} /> : <Icon name="eye-off" size={13} />}
+            {salesMode === "internal" ? "Internal Mode" : "Customer Mode"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   CONFIGURE — customer inputs (left) + live pricing rail (right)
+   ========================================================================= */
+
+/* =========================================================================
+   CONFIGURE TAB — left customer config + center modules/architecture
+   ========================================================================= */
+function ConfigureTab({ scenario, updateCustomer, updateActive, toggleInArray, results }) {
+  const c = scenario.customer;
+  const recommendedModel = results.recommendedModel;
+  const isRecommendedModel = scenario.model === recommendedModel || (recommendedModel === "network" && scenario.model === "legacy_user_based" && scenario.planId === "network");
+  const isUsageBased = scenario.model !== "legacy_user_based";
+  const totalOps = c.turnFlights + c.ronArrivalFlights + c.ronDepartureFlights;
+
+  return (
+    <div className="flex flex-col gap-5">
+      {/* Customer + architecture */}
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <Card style={{ padding: 20 }}>
+          <SectionLabel eyebrow="Step 1" title="Customer" />
+          <FieldRow label="Company name">
+            <input
+              value={c.companyName}
+              onChange={(e) => updateCustomer({ companyName: e.target.value })}
+              className="f-body"
+              style={{ width: 170, height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, padding: "0 10px", fontSize: 12.5, textAlign: "right" }}
+            />
+          </FieldRow>
+          <FieldRow label="Country">
+            <input
+              value={c.country}
+              onChange={(e) => updateCustomer({ country: e.target.value })}
+              className="f-body"
+              style={{ width: 170, height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, padding: "0 10px", fontSize: 12.5, textAlign: "right" }}
+            />
+          </FieldRow>
+          <FieldRow label="Currency">
+            <select
+              value={c.currency}
+              onChange={(e) => updateCustomer({ currency: e.target.value })}
+              className="f-mono"
+              style={{ height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, padding: "0 8px", fontSize: 12.5 }}
+            >
+              {Object.keys(PRICING_CONFIG.currencies).map((code) => (
+                <option key={code} value={code}>{code}</option>
+              ))}
+            </select>
+          </FieldRow>
+          <FieldRow label="Stations" tooltip="Physical airport stations this customer operates.">
+            <Stepper value={c.stations} min={1} onChange={(v) => updateCustomer({ stations: v })} />
+          </FieldRow>
+          <FieldRow label="Ramp agents" tooltip={isUsageBased ? "Operational field employees. In Platform/Hybrid this scales the price dynamically." : "Operational field employees using the app for turnarounds, checkpoints and reports."}>
+            <Stepper value={c.rampAgents} min={0} step={10} onChange={(v) => updateCustomer({ rampAgents: v })} />
+          </FieldRow>
+          <FieldRow label="Admin users">
+            <Stepper value={c.adminUsers} min={0} onChange={(v) => updateCustomer({ adminUsers: v })} />
+          </FieldRow>
+          <FieldRow label="Airline customers" tooltip="Airlines this ground handler serves and who may get portal access.">
+            <Stepper value={c.airlines} min={0} onChange={(v) => updateCustomer({ airlines: v })} />
+          </FieldRow>
+
+          <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 6, paddingTop: 8 }}>
+            <div className="f-mono" style={{ fontSize: 10.5, color: C.mutedLight, letterSpacing: "0.08em", marginBottom: 2 }}>OPERACIÓN MENSUAL</div>
+          </div>
+          <FieldRow label="TURN (vuelta rápida)" tooltip="Aeronaves que llegan y salen el mismo día — turnaround estándar.">
+            <Stepper value={c.turnFlights} min={0} step={25} onChange={(v) => updateCustomer({ turnFlights: v })} />
+          </FieldRow>
+          <FieldRow label="RON — Llegada" tooltip="Aeronave que pernocta: servicio de llegada.">
+            <Stepper value={c.ronArrivalFlights} min={0} step={5} onChange={(v) => updateCustomer({ ronArrivalFlights: v })} />
+          </FieldRow>
+          <FieldRow label="RON — Salida" tooltip="Aeronave que pernocta: servicio de salida al día siguiente.">
+            <Stepper value={c.ronDepartureFlights} min={0} step={5} onChange={(v) => updateCustomer({ ronDepartureFlights: v })} />
+          </FieldRow>
+          <div className="flex justify-between" style={{ padding: "6px 0" }}>
+            <span className="f-body" style={{ fontSize: 11.5, color: C.mutedLight }}>Total operaciones / mes</span>
+            <span className="f-mono" style={{ fontSize: 12.5, color: C.ink, fontWeight: 700 }}>{fmtNum(totalOps)}</span>
+          </div>
+
+          <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 6, paddingTop: 8 }}>
+            <div className="f-mono" style={{ fontSize: 10.5, color: C.mutedLight, letterSpacing: "0.08em", marginBottom: 2 }}>ADVANCED — VOLUME ASSUMPTIONS</div>
+          </div>
+          <FieldRow label="Operational reports / mo">
+            <Stepper value={c.monthlyReports} min={0} step={500} onChange={(v) => updateCustomer({ monthlyReports: v })} />
+          </FieldRow>
+          <FieldRow label="Images per report" tooltip="Cada imagen adicional incrementa el almacenamiento estimado y su precio.">
+            <Stepper value={c.imagesPerReport} min={0} onChange={(v) => updateCustomer({ imagesPerReport: v })} />
+          </FieldRow>
+          <FieldRow label="Avg. image size (MB)">
+            <input
+              type="number" step="0.1" value={c.avgImageSizeMB}
+              onChange={(e) => updateCustomer({ avgImageSizeMB: Number(e.target.value) })}
+              className="f-mono text-right"
+              style={{ width: 76, height: 30, borderRadius: 8, border: `1px solid ${C.borderStrong}`, fontSize: 13, padding: "0 8px" }}
+            />
+          </FieldRow>
+          <FieldRow label="Tokens IA (millones/mes)" tooltip="Consumo mensual estimado de tokens de IA (copiloto, OCR, análisis).">
+            <Stepper value={c.aiTokensMillions} min={0} step={1} onChange={(v) => updateCustomer({ aiTokensMillions: v })} suffix="M" />
+          </FieldRow>
+        </Card>
+
+        <Card style={{ padding: 20 }}>
+          <SectionLabel
+            eyebrow="Step 2"
+            title="Commercial architecture"
+            right={
+              !isRecommendedModel && (
+                <div className="flex items-center gap-1.5 f-body" style={{ fontSize: 11, color: C.amberDark, fontWeight: 600 }}>
+                  <Icon name="sparkles" size={12} /> {MODEL_LABEL[recommendedModel]} recommended
+                </div>
+              )
+            }
+          />
+          <div className="mb-4">
+            <Segmented
+              value={scenario.model}
+              onChange={(v) => updateActive({ model: v })}
+              options={[
+                { value: "legacy_user_based", label: "Per-User" },
+                { value: "platform_based", label: "Platform" },
+                { value: "hybrid", label: "Hybrid" },
+              ]}
+            />
+          </div>
+
+          {scenario.model === "legacy_user_based" && (
+            <div className="flex flex-col gap-2">
+              {PRICING_CONFIG.plans.map((p) => {
+                const active = scenario.planId === p.id;
+                const suggested = results.recommendedPlan === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => updateActive({ planId: p.id })}
+                    className="text-left flex items-center justify-between"
+                    style={{ padding: "10px 12px", borderRadius: 10, border: `1px solid ${active ? C.ink : C.border}`, background: active ? C.panelAlt : "white" }}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="f-body" style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{p.name}</span>
+                        {suggested && (
+                          <span className="f-mono" style={{ fontSize: 9.5, fontWeight: 700, color: C.amberDark, background: C.amberSoft, padding: "1px 6px", borderRadius: 5 }}>RECOMMENDED</span>
+                        )}
+                      </div>
+                      <div className="f-body" style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{p.recommendedFor} · SLA {p.sla}</div>
+                    </div>
+                    <div className="f-mono text-right" style={{ fontSize: 12.5, color: C.inkSoft, fontWeight: 600 }}>
+                      {fmtMoney(p.pricePerUser)}/agent<div style={{ fontSize: 10, color: C.mutedLight, fontWeight: 500 }}>{p.includedAgents} incl.</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {scenario.model !== "legacy_user_based" && (
+            <div className="flex flex-col gap-3">
+              <div className="f-body" style={{ fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
+                {scenario.model === "platform_based"
+                  ? "Tarifa base de plataforma más estaciones, usuarios administrativos, agentes de rampa, operaciones de vuelo, almacenamiento y tokens de IA — todo escalando dinámicamente con el uso real del cliente."
+                  : "Una tarifa base más ligera con un bloque de agentes incluido; agentes adicionales, operaciones, almacenamiento y tokens de IA escalan con el uso — un punto medio entre per-user y plataforma completa."}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <MiniStat label="Base platform fee" value={fmtMoney(PRICING_CONFIG.platform.baseFee)} />
+                <MiniStat label="Station fee" value={`${fmtMoney(PRICING_CONFIG.platform.stationFee)}/station`} />
+                {scenario.model === "hybrid" && <MiniStat label="Agentes incluidos" value={fmtNum(PRICING_CONFIG.hybridIncludedAgents)} />}
+              </div>
+
+              <div className="f-mono" style={{ fontSize: 10.5, color: C.mutedLight, letterSpacing: "0.06em", marginTop: 4 }}>AIRLINE PORTAL TIER</div>
+              <Segmented
+                value={scenario.airlineTierId}
+                onChange={(v) => updateActive({ airlineTierId: v })}
+                options={PRICING_CONFIG.airlineTiers.map((t) => ({ value: t.id, label: `${t.name} · ${fmtMoney(t.price)}` }))}
+              />
+              <div className="grid grid-cols-3 gap-2">
+                {PRICING_CONFIG.airlineTiers.map((t) => {
+                  const active = scenario.airlineTierId === t.id;
+                  return (
+                    <div
+                      key={t.id}
+                      style={{ padding: "10px 10px", borderRadius: 10, border: `1px solid ${active ? C.ink : C.border}`, background: active ? C.panelAlt : "white" }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="f-body" style={{ fontSize: 12, fontWeight: 700, color: C.ink }}>{t.name}</span>
+                        <span className="f-mono" style={{ fontSize: 11, color: C.inkSoft, fontWeight: 600 }}>{fmtMoney(t.price)}</span>
+                      </div>
+                      <div className="f-body" style={{ fontSize: 10.5, color: C.amberDark, fontWeight: 600, marginTop: 4 }}>{t.dataAccess}</div>
+                      <div className="f-body" style={{ fontSize: 10.5, color: C.mutedLight, marginTop: 1 }}>SLA soporte: {t.sla}</div>
+                      <div className="f-body" style={{ fontSize: 10.5, color: C.mutedLight, marginTop: 1, lineHeight: 1.4 }}>{t.infra}</div>
+                      <ul style={{ margin: "6px 0 0", padding: 0, listStyle: "none" }}>
+                        {t.features.map((f, i) => (
+                          <li key={i} className="f-body" style={{ fontSize: 10.5, color: C.muted, lineHeight: 1.5 }}>· {f}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Modules */}
+      <Card style={{ padding: 20 }}>
+        <SectionLabel eyebrow="Step 3" title="Optional modules" right={<span className="f-body" style={{ fontSize: 12, color: C.muted }}>{scenario.modules.length} selected</span>} />
+        <div className="grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
+          {PRICING_CONFIG.modules.map((m) => {
+            if (m.id === "revenue_assurance") {
+              const checked = scenario.modules.includes(m.id);
+              const base = scenario.revenueAssuranceBase || 0;
+              const price = base * 0.1;
+              const mrr = results.mrrParts.mrr;
+              const commission = price;
+              const net = base - commission;
+              const netVsPlatform = net - mrr;
+              const netVsPlatformPct = net > 0 ? (netVsPlatform / net) * 100 : 0;
+              const breakeven = mrr / 0.9;
+              return (
+                <div
+                  key={m.id}
+                  style={{ gridColumn: "1 / -1", border: `1px solid ${checked ? C.ink : C.border}`, borderRadius: 10, background: checked ? C.panelAlt : "white", padding: 12 }}
+                >
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input type="checkbox" checked={checked} onChange={() => toggleInArray("modules", m.id)} style={{ marginTop: 3, accentColor: C.ink }} />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="f-body" style={{ fontSize: 13.5, fontWeight: 600, color: C.ink }}>{m.name}</span>
+                        <span className="f-mono" style={{ fontSize: 12.5, fontWeight: 600, color: C.inkSoft }}>{fmtMoney(price, scenario.customer.currency)}/mo</span>
+                      </div>
+                      <div className="f-body" style={{ fontSize: 11.5, color: C.muted, marginTop: 2, lineHeight: 1.4 }}>10% de los ingresos adicionales facturados vía la app.</div>
+                    </div>
+                  </label>
+                  {checked && (
+                    <div style={{ marginTop: 10, paddingLeft: 26 }}>
+                      <div className="flex items-center justify-between">
+                        <span className="f-body" style={{ fontSize: 11.5, color: C.inkSoft }}>Ingresos adicionales facturados / mes</span>
+                        <Stepper
+                          value={scenario.revenueAssuranceBase}
+                          min={0}
+                          step={500}
+                          onChange={(v) => updateActive({ revenueAssuranceBase: v })}
+                        />
+                      </div>
+
+                      <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: C.panel, border: `1px solid ${C.border}` }}>
+                        <div className="f-mono" style={{ fontSize: 10, color: C.mutedLight, letterSpacing: "0.08em", marginBottom: 8 }}>¿SE PAGA SOLA LA SOLUCIÓN?</div>
+                        <RailLine label="Ingresos adicionales facturados" value={fmtMoney(base, scenario.customer.currency)} />
+                        <RailLine label="Comisión Revenue Assurance (10%)" value={`-${fmtMoney(commission, scenario.customer.currency)}`} />
+                        <div style={{ height: 1, background: C.border, margin: "6px 0" }} />
+                        <RailLine label="Neto para el cliente" value={fmtMoney(net, scenario.customer.currency)} strong />
+                        <RailLine label="Live Pricing (precio mensual)" value={`-${fmtMoney(mrr, scenario.customer.currency)}`} />
+                        <div style={{ height: 1, background: C.border, margin: "6px 0" }} />
+                        <RailLine
+                          label="Resultado neto"
+                          value={fmtMoney(netVsPlatform, scenario.customer.currency)}
+                          strong
+                          tone={netVsPlatform >= 0 ? "good" : undefined}
+                        />
+
+                        {base > 0 && (
+                          <>
+                            <div style={{ height: 8, borderRadius: 999, background: C.border, overflow: "hidden", marginTop: 10 }}>
+                              <div
+                                style={{
+                                  height: "100%",
+                                  width: `${Math.max(0, Math.min(100, netVsPlatformPct))}%`,
+                                  background: netVsPlatform >= 0 ? C.teal : C.amber,
+                                  transition: "width .2s",
+                                }}
+                              />
+                            </div>
+                            <div className="f-body" style={{ fontSize: 10.5, color: C.mutedLight, marginTop: 4 }}>
+                              {netVsPlatform >= 0
+                                ? `El ${fmtPct(netVsPlatformPct)} del ingreso neto queda como beneficio después de cubrir la plataforma.`
+                                : `Faltan ${fmtMoney(Math.abs(netVsPlatform), scenario.customer.currency)} netos para cubrir la plataforma con este monto.`}
+                            </div>
+                          </>
+                        )}
+
+                        <div className="flex items-start gap-2" style={{ marginTop: 10, padding: "8px 10px", borderRadius: 8, background: C.tealSoft }}>
+                          <Icon name="trending-up" size={13} color={C.tealDark} style={{ marginTop: 1, flexShrink: 0 }} />
+                          <span className="f-body" style={{ fontSize: 11, color: C.tealDark, lineHeight: 1.4 }}>
+                            Con solo recuperar más de <strong>{fmtMoney(breakeven, scenario.customer.currency)}</strong> en ingresos adicionales al mes, la solución ya se paga sola.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <Checkline
+                key={m.id}
+                checked={scenario.modules.includes(m.id)}
+                onChange={() => toggleInArray("modules", m.id)}
+                title={m.name}
+                sub={m.desc}
+                price={m.price}
+                currency={scenario.customer.currency}
+              />
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Integrations + implementation */}
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        <Card style={{ padding: 20 }}>
+          <SectionLabel eyebrow="Step 4" title="Integrations" />
+          <div className="flex flex-col gap-2">
+            {PRICING_CONFIG.integrations.map((i) => {
+              const checked = scenario.integrations.includes(i.id);
+              return (
+                <label key={i.id} className="flex items-center justify-between p-2.5 cursor-pointer" style={{ border: `1px solid ${checked ? C.ink : C.border}`, borderRadius: 10, background: checked ? C.panelAlt : "white" }}>
+                  <div className="flex items-center gap-2.5">
+                    <input type="checkbox" checked={checked} onChange={() => toggleInArray("integrations", i.id)} style={{ accentColor: C.ink }} />
+                    <span className="f-body" style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{i.name}</span>
+                  </div>
+                  <span className="f-mono" style={{ fontSize: 11.5, color: C.muted }}>{fmtMoney(i.setup)} setup · {fmtMoney(i.maint)}/mo</span>
+                </label>
+              );
+            })}
+          </div>
+        </Card>
+
+        <Card style={{ padding: 20 }}>
+          <SectionLabel eyebrow="Step 5" title="Implementation package" />
+          <div className="flex flex-col gap-2 mb-4">
+            {PRICING_CONFIG.implementation.map((p) => {
+              const active = scenario.implementationId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => updateActive({ implementationId: p.id })}
+                  className="text-left"
+                  style={{ padding: "10px 12px", borderRadius: 10, border: `1px solid ${active ? C.ink : C.border}`, background: active ? C.panelAlt : "white" }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="f-body" style={{ fontSize: 13.5, fontWeight: 700, color: C.ink }}>{p.name}</span>
+                    <span className="f-mono" style={{ fontSize: 13, fontWeight: 700, color: C.inkSoft }}>{fmtMoney(p.price)}</span>
+                  </div>
+                  <div className="f-body" style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>{p.includes.join(" · ")}</div>
+                </button>
+              );
+            })}
+          </div>
+          <SectionLabel title="Contract term" />
+          <FieldRow label="Contract term">
+            <Segmented
+              value={String(scenario.contractMonths)}
+              onChange={(v) => updateActive({ contractMonths: Number(v) })}
+              options={[{ value: "12", label: "12 mo" }, { value: "24", label: "24 mo" }, { value: "36", label: "36 mo" }]}
+            />
+          </FieldRow>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div style={{ padding: "8px 10px", borderRadius: 8, background: C.panelAlt, border: `1px solid ${C.border}` }}>
+      <div className="f-body" style={{ fontSize: 10, color: C.muted }}>{label}</div>
+      <div className="f-mono" style={{ fontSize: 13, fontWeight: 700, color: C.ink }}>{value}</div>
+    </div>
+  );
+}
+
+/* =========================================================================
+   STICKY RIGHT RAIL — live pricing "instrument panel"
+   ========================================================================= */
+function PricingRail({ scenario, results, salesMode, currency, updateActive }) {
+  const mrr = results.mrrParts.mrr;
+  const isEnterpriseAtSMB = scenario.model === "legacy_user_based" && scenario.customer.stations > 1;
+  const lineItems = results.mrrParts.items;
+  const listMonthly = results.mrrParts.listMonthly;
+  const discountPct = results.mrrParts.discountPct;
+  const discountAmount = listMonthly * (discountPct / 100);
+  const promoApplied = discountPct > 0;
+
+  const [promoInput, setPromoInput] = useState(scenario.promoCode || "");
+
+  const applyPromo = (raw) => {
+    setPromoInput(raw);
+    const match = raw.trim().toLowerCase() === "leoai";
+    updateActive({ promoCode: raw, discountPct: match ? 10 : 0 });
+  };
+
+  return (
+    <div>
+      <Card style={{ padding: 0, overflow: "hidden" }}>
+        <div style={{ background: C.ink, padding: "16px 18px" }}>
+          <div className="flex items-center gap-1.5">
+            <Icon name="gauge" size={14} color={C.amber} />
+            <span className="f-mono" style={{ fontSize: 10.5, color: "#9FB3D1", letterSpacing: "0.08em" }}>LIVE PRICING</span>
+          </div>
+          <div className="f-mono" style={{ fontSize: 34, fontWeight: 700, color: "white", marginTop: 10, lineHeight: 1 }}>
+            {fmtMoney(mrr, currency)}
+            <span className="f-body" style={{ fontSize: 13, color: "#9FB3D1", fontWeight: 500 }}>/mo</span>
+          </div>
+        </div>
+
+        <div style={{ padding: 18 }}>
+          <div className="f-mono" style={{ fontSize: 10.5, color: C.mutedLight, letterSpacing: "0.08em", marginBottom: 8 }}>DESGLOSE MENSUAL</div>
+          <div className="flex flex-col gap-1.5 mb-2 scrollbar-thin" style={{ maxHeight: 340, overflowY: "auto", paddingRight: 4 }}>
+            {lineItems.map((it, i) => (
+              <RailLine key={i} label={it.label} value={fmtMoney(it.amount, currency, 2)} />
+            ))}
+          </div>
+          <div style={{ height: 1, background: C.border, margin: "10px 0" }} />
+          <RailLine label="Subtotal" value={fmtMoney(listMonthly, currency, 2)} strong />
+          {promoApplied && (
+            <RailLine label={`Código LEOAI (-${discountPct}%)`} value={`-${fmtMoney(discountAmount, currency, 2)}`} tone="good" />
+          )}
+          <RailLine label="Precio mensual" value={fmtMoney(mrr, currency, 2)} strong />
+
+          <div className="mt-3">
+            <input
+              value={promoInput}
+              onChange={(e) => applyPromo(e.target.value)}
+              placeholder="Código de descuento"
+              className="f-body"
+              style={{
+                width: "100%", height: 32, borderRadius: 8, padding: "0 10px", fontSize: 12,
+                border: `1px solid ${promoApplied ? C.teal : C.borderStrong}`,
+                background: promoApplied ? C.tealSoft : "white", color: C.ink,
+              }}
+            />
+            {promoApplied && (
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <Icon name="check-circle" size={12} color={C.teal} />
+                <span className="f-body" style={{ fontSize: 11, color: C.tealDark, fontWeight: 500 }}>Código aplicado</span>
+              </div>
+            )}
+          </div>
+
+          {isEnterpriseAtSMB && (
+            <div className="flex items-start gap-2 mt-4" style={{ padding: "8px 10px", borderRadius: 8, background: C.amberSoft }}>
+              <Icon name="alert-triangle" size={13} color={C.amberDark} style={{ marginTop: 1, flexShrink: 0 }} />
+              <span className="f-body" style={{ fontSize: 11, color: C.amberDark, lineHeight: 1.4 }}>Multi-station customer on Per-User pricing — likely receiving enterprise functionality at SMB pricing.</span>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      <div className="flex items-center gap-1.5 mt-3 f-body" style={{ fontSize: 11, color: C.mutedLight, padding: "0 4px" }}>
+        <Icon name="radar" size={12} />
+        {salesMode === "internal" ? "Internal Mode" : "Customer Mode"}
+      </div>
+    </div>
+  );
+}
+
+function RailLine({ label, value, strong, tone }) {
+  const color = tone === "good" ? C.tealDark : strong ? C.ink : C.inkSoft;
+  return (
+    <div className="flex justify-between" style={{ padding: strong ? "4px 0" : 0 }}>
+      <span className="f-body" style={{ fontSize: strong ? 12.5 : 12, color: strong ? C.ink : C.muted, fontWeight: strong ? 700 : 400 }}>{label}</span>
+      <span className="f-mono" style={{ fontSize: strong ? 13 : 12, color, fontWeight: strong ? 700 : 600 }}>{value}</span>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+
+</script>
+</body>
+</html>
