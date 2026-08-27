@@ -602,7 +602,7 @@ function populateSelect(id,placeholder,options){
     if(options.includes(current))sel.value=current;else sel.value='all';
 }
 function showToast(msg,isErr=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(isErr?' error':'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
-function logout(){if(confirm('¿Cerrar sesión?')){sessionStorage.clear();window.location.href='login-Admin.html';}}
+function logout(){if(confirm('¿Cerrar sesión?')){sessionStorage.clear();window.location.href='login-SMS.html';}}
 
 function jsonpFetch(id,url,timeoutMs,onData,onFail){
     const old=document.getElementById(id);if(old)old.parentNode.removeChild(old);
@@ -1165,11 +1165,11 @@ function lbxFmtDateTime(ts) {
 }
 
 // ══════════════════════════════════════════════════════
-//  BOOT — requiere sesión iniciada (login-Admin.html)
+//  BOOT — requiere sesión iniciada (login-SMS.html)
 // ══════════════════════════════════════════════════════
 (function boot(){
     const userData = sessionStorage.getItem('user');
-    if (!userData) { alert('Sesión no encontrada.'); window.location.href = 'login-Admin.html'; return; }
+    if (!userData) { alert('Sesión no encontrada.'); window.location.href = 'login-SMS.html'; return; }
     try { loadSmsReports(); } catch(e) { console.error('Error cargando SMS:', e); }
     iataLoad();
 })();
