@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#0b1424">
+<title>Reportes de Control Interno · AS Handling / AeroJet</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1424;--bg2:#101c31;--card:#14223b;--line:#22334f;--line2:#2d4266;--tx:#e8eef8;--mut:#8ea0bd;--acc:#22b8cf;--ok:#2ecc71;--warn:#f5a524}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+.wrap{max-width:640px;margin:0 auto;padding:16px 14px 40px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--acc);display:grid;place-items:center;font-weight:800;font-size:14px;color:#05202a}
+header h1{font-size:17px;font-weight:800}
+header p{font-size:11px;color:var(--mut)}
+.banner{background:rgba(245,165,36,.12);border:1px solid rgba(245,165,36,.4);color:#ffd28a;border-radius:10px;padding:8px 10px;font-size:13px;display:none;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.banner button{background:var(--warn);color:#2a1a00;border:0;border-radius:8px;padding:6px 10px;font-weight:700;font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.sec{font-size:11px;font-weight:700;color:var(--acc);letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.full{grid-column:1/-1}
+label{display:block;font-size:11px;font-weight:600;color:var(--mut);margin-bottom:4px}
+label .req{color:var(--acc)}
+select#tipo{appearance:none;-webkit-appearance:none;padding-right:34px;background-color:var(--bg2);background-image:linear-gradient(45deg,transparent 50%,#8ea0bd 50%),linear-gradient(135deg,#8ea0bd 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+input,textarea,select{width:100%;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--tx);padding:10px;font:inherit;font-size:15px;outline:none}
+input:focus,textarea:focus{border-color:var(--acc)}
+input.bad,textarea.bad,select.bad,.sigbox.bad{border:1px solid #ef4444!important}
+textarea{min-height:150px;resize:vertical;line-height:1.45}
+.foto{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.foto label.btn{margin:0;background:transparent;border:1px dashed var(--line2);color:var(--mut);border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.th{position:relative;width:52px;height:52px;border-radius:8px;overflow:hidden;border:1px solid var(--line2)}
+.th img{width:100%;height:100%;object-fit:cover}
+.th button{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;font-size:11px}
+.sigbox{position:relative;background:#f4f7fb;border-radius:9px;height:130px;touch-action:none;overflow:hidden;margin-top:6px;border:1px solid transparent}
+.sigbox canvas{width:100%;height:100%;display:block}
+.sigbox .ph{position:absolute;inset:0;display:grid;place-items:center;color:#9aa8bd;font-size:12px;pointer-events:none}
+.sigbox .clr{position:absolute;top:4px;right:4px;background:#dfe6f0;border:0;border-radius:6px;padding:3px 7px;font:inherit;font-size:11px;color:#334}
+.vq{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.vq b{font-size:14px}
+.seg{display:flex;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:3px;gap:3px}
+.seg button{background:none;border:0;color:var(--mut);padding:8px 18px;border-radius:7px;font:inherit;font-weight:700;font-size:14px}
+.seg button.on{background:var(--acc);color:#05202a}
+#vueloBox{display:none;margin-top:10px}
+.send{width:100%;border:0;border-radius:12px;padding:15px;font:inherit;font-weight:800;font-size:16px;background:var(--acc);color:#05202a}
+.send:disabled{opacity:.5}
+.msg{color:#ff9b9b;font-size:12px;text-align:center;margin-top:8px;min-height:16px}
+.done{text-align:center;padding:40px 10px;display:none}
+.done .ic{width:68px;height:68px;border-radius:50%;background:rgba(46,204,113,.15);color:var(--ok);display:grid;place-items:center;font-size:34px;margin:0 auto 14px}
+.done h2{font-size:20px;margin-bottom:6px}
+.done p{color:var(--mut);font-size:14px}
+.tk{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--acc);background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:12px;margin:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">CI</div>
+    <div><h1>Reportes de Control Interno</h1><p>AS Handling · AeroJet Handling Group</p></div>
+  </header>
+
+  <div class="banner" id="pendBanner"><span id="pendTxt"></span><button onclick="retryPending()">Reintentar</button></div>
+
+  <form id="form" onsubmit="submitForm(event)">
+    <div class="card">
+      <div class="grid">
+        <div class="full">
+          <label>Tipo de evento <span class="req">*</span></label>
+          <select id="tipo">
+            <option value="">Seleccioná una categoría…</option>
+            <option>Inventario</option>
+            <option>Faltante o pérdida</option>
+            <option>Daño a equipo</option>
+            <option>Incumplimiento de procedimiento</option>
+            <option>Hallazgo de inspección / auditoría</option>
+            <option>Uso indebido de equipo o recursos</option>
+            <option>Entrega / recepción de equipo</option>
+            <option>Novedad con personal</option>
+            <option>Seguridad física / acceso</option>
+            <option>Documentación / registros</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <input type="text" id="tipoOtro" placeholder="¿Cuál? Indicá la categoría *" style="display:none;margin-top:8px">
+        </div>
+        <div><label>Fecha <span class="req">*</span></label><input type="date" id="fecha"></div>
+        <div><label>Personal involucrado</label><input type="text" id="personal" placeholder="Ej: Inventario"></div>
+        <div><label>Equipo involucrado</label><input type="text" id="equipo" placeholder="Ej: Carreta CE3"></div>
+        <div><label>Otros</label><input type="text" id="otros"></div>
+        <div class="full">
+          <label>Descripción <span class="req">*</span></label>
+          <textarea id="descripcion" placeholder="Ej: Hoy se realiza inventario Carreta CE3. 17 palas grandes, 8 palas pequeñas…"></textarea>
+          <div class="foto">
+            <label class="btn" for="fileIn">📷 Adjuntar foto (opcional)</label>
+            <input type="file" id="fileIn" accept="image/*" multiple hidden>
+            <span id="thumbs" style="display:contents"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec">Control Interno — quien reporta</div>
+      <input type="text" id="ciNombre" placeholder="Nombre *">
+      <div class="sigbox" id="box1"><div class="ph" id="ph1">Firma *</div><canvas id="sig1"></canvas><button type="button" class="clr" onclick="sigs.s1.clear()">Borrar</button></div>
+    </div>
+
+    <div class="card">
+      <div class="vq">
+        <b>¿Aplica a un vuelo?</b>
+        <div class="seg" id="vSeg"><button type="button" data-v="No" class="on">No</button><button type="button" data-v="Sí">Sí</button></div>
+      </div>
+      <div id="vueloBox" class="grid">
+        <div><label>N° de vuelo</label><input type="text" id="vuelo" placeholder="AV 631"></div>
+        <div><label>Aerolínea</label><input type="text" id="aerolinea" placeholder="Avianca"></div>
+      </div>
+    </div>
+
+    <button class="send" id="btnSend" type="submit">Enviar reporte</button>
+    <div class="msg" id="msg"></div>
+  </form>
+
+  <div class="done" id="done">
+    <div class="ic" id="doneIc">✓</div>
+    <h2 id="doneTitle">Reporte enviado</h2>
+    <p id="doneMsg">Quedó registrado en Control Interno.</p>
+    <div class="tk" id="doneTk"></div>
+    <button class="send" onclick="location.reload()">Nuevo reporte</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════ CONFIGURACIÓN ═══════════ */
+const APPS_SCRIPT_URL = 'PEGAR_AQUI_URL_DEL_WEB_APP'; // .../exec
+const MAX_FOTOS = 6;
+
+const $ = id => document.getElementById(id);
+let aplicaVuelo = 'No', fotos = [];
+
+/* ═══════════ INIT ═══════════ */
+$('fecha').value = new Date().toLocaleDateString('en-CA');
+try { const n = localStorage.getItem('ci_nombre'); if (n) $('ciNombre').value = n; } catch(_){}
+$('vSeg').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  [...$('vSeg').children].forEach(x => x.classList.toggle('on', x === b));
+  aplicaVuelo = b.dataset.v;
+  $('vueloBox').style.display = aplicaVuelo === 'Sí' ? 'grid' : 'none';
+};
+$('fileIn').addEventListener('change', onFiles);
+document.querySelectorAll('input,textarea,select').forEach(el => el.addEventListener('input', () => el.classList.remove('bad')));
+$('tipo').addEventListener('change', () => {
+  const otro = $('tipo').value === 'Otro';
+  $('tipoOtro').style.display = otro ? 'block' : 'none';
+  if (otro) $('tipoOtro').focus();
+});
+
+/* ═══════════ FOTOS ═══════════ */
+async function onFiles(e){
+  for (const f of [...e.target.files].slice(0, MAX_FOTOS - fotos.length)) { try { fotos.push(await compress(f)); } catch(_){} }
+  e.target.value = ''; drawThumbs();
+}
+function compress(file, max=1280, q=0.72){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => { const img = new Image(); img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', q)); };
+      img.onerror = rej; img.src = r.result; };
+    r.onerror = rej; r.readAsDataURL(file);
+  });
+}
+function drawThumbs(){
+  $('thumbs').innerHTML = fotos.map((f,i) => `<div class="th"><img src="${f}"><button type="button" onclick="fotos.splice(${i},1);drawThumbs()">×</button></div>`).join('');
+}
+
+/* ═══════════ FIRMAS ═══════════ */
+function SigPad(canvas, ph){
+  const ctx = canvas.getContext('2d'); let drawing = false, empty = true, last = null;
+  function resize(){
+    const r = canvas.getBoundingClientRect(); if (!r.width) return;
+    const keep = empty ? null : canvas.toDataURL(), dpr = window.devicePixelRatio || 1;
+    canvas.width = r.width*dpr; canvas.height = r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b1a33';
+    if (keep) { const im = new Image(); im.onload = () => ctx.drawImage(im, 0, 0, r.width, r.height); im.src = keep; }
+  }
+  const pos = e => { const r = canvas.getBoundingClientRect(); return {x: e.clientX - r.left, y: e.clientY - r.top}; };
+  canvas.addEventListener('pointerdown', e => { drawing = true; last = pos(e); canvas.setPointerCapture(e.pointerId); ph.style.display = 'none'; canvas.parentNode.classList.remove('bad'); });
+  canvas.addEventListener('pointermove', e => { if (!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last = p; empty = false; });
+  ['pointerup','pointercancel','pointerleave'].forEach(ev => canvas.addEventListener(ev, () => drawing = false));
+  resize();
+  return {
+    resize,
+    clear(){ ctx.clearRect(0,0,canvas.width,canvas.height); empty = true; ph.style.display = 'grid'; },
+    isEmpty: () => empty,
+    toData(){ if (empty) return ''; const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
+      const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0,0,c.width,c.height); x.drawImage(canvas,0,0); return c.toDataURL('image/png'); }
+  };
+}
+const sigs = { s1: SigPad($('sig1'), $('ph1')) };
+window.addEventListener('resize', () => sigs.s1.resize());
+
+/* ═══════════ VALIDACIÓN Y ENVÍO ═══════════ */
+function validate(){
+  const bad = [];
+  if (!$('tipo').value) bad.push($('tipo'));
+  if ($('tipo').value === 'Otro' && !$('tipoOtro').value.trim()) bad.push($('tipoOtro'));
+  if (!$('fecha').value) bad.push($('fecha'));
+  if (!$('descripcion').value.trim()) bad.push($('descripcion'));
+  if (!$('ciNombre').value.trim()) bad.push($('ciNombre'));
+  if (sigs.s1.isEmpty()) bad.push($('box1'));
+  bad.forEach(el => el.classList.add('bad'));
+  if (bad.length) { $('msg').textContent = 'Completá los campos marcados.'; bad[0].scrollIntoView({behavior:'smooth', block:'center'}); }
+  return !bad.length;
+}
+function makeTicket(){
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  return `CI-${String(d.getFullYear()).slice(2)}${p(d.getMonth()+1)}${p(d.getDate())}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+}
+function buildPayload(){
+  return {
+    ticket: makeTicket(),
+    tipo: $('tipo').value === 'Otro' ? 'Otro: ' + $('tipoOtro').value.trim() : $('tipo').value,
+    fecha: $('fecha').value,
+    personal: $('personal').value.trim(),
+    equipo: $('equipo').value.trim(),
+    otros: $('otros').value.trim(),
+    descripcion: $('descripcion').value.trim(),
+    fotos,
+    ciNombre: $('ciNombre').value.trim(),
+    ciFirma: sigs.s1.toData(),
+    aplicaVuelo,
+    vuelo: aplicaVuelo === 'Sí' ? $('vuelo').value.trim() : '',
+    aerolinea: aplicaVuelo === 'Sí' ? $('aerolinea').value.trim() : '',
+    dispositivo: navigator.userAgent.slice(0,120)
+  };
+}
+async function post(payload){
+  const body = JSON.stringify(payload);
+  try {
+    const r = await fetch(APPS_SCRIPT_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body});
+    const j = await r.json();
+    if (j && j.ok) return true;
+    throw new Error((j && j.error) || 'Respuesta inválida');
+  } catch (err) {
+    if (err instanceof TypeError) { await fetch(APPS_SCRIPT_URL, {method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body}); return true; }
+    throw err;
+  }
+}
+async function submitForm(e){
+  e.preventDefault(); $('msg').textContent = '';
+  if (!validate()) return;
+  const btn = $('btnSend'); btn.disabled = true; btn.textContent = 'Enviando…';
+  const payload = buildPayload();
+  try { localStorage.setItem('ci_nombre', payload.ciNombre); } catch(_){}
+  try { await post(payload); showDone(payload.ticket, true); }
+  catch (_) { showDone(payload.ticket, false, savePending(payload)); }
+}
+function showDone(tk, ok, saved){
+  $('form').style.display = 'none'; $('done').style.display = 'block'; $('doneTk').textContent = tk;
+  if (!ok) {
+    $('doneIc').textContent = '!'; $('doneIc').style.cssText = 'background:rgba(245,165,36,.15);color:#f5a524';
+    $('doneTitle').textContent = 'Sin conexión';
+    $('doneMsg').textContent = saved ? 'Quedó guardado en este dispositivo y se enviará al recuperar señal.' : 'No se pudo enviar ni guardar. Intentá de nuevo con señal.';
+  }
+}
+
+/* ═══════════ COLA OFFLINE ═══════════ */
+function getPending(){ try { return JSON.parse(localStorage.getItem('ci_pending') || '[]'); } catch(_){ return []; } }
+function savePending(p){
+  const q = getPending(); q.push(p);
+  try { localStorage.setItem('ci_pending', JSON.stringify(q)); return true; }
+  catch(_){ try { p.fotos = []; localStorage.setItem('ci_pending', JSON.stringify(q)); return true; } catch(__){ return false; } }
+}
+function paintBanner(n){ $('pendBanner').style.display = n ? 'flex' : 'none'; $('pendTxt').textContent = `${n} reporte(s) pendiente(s) de envío`; }
+async function retryPending(){
+  const q = getPending(), left = [];
+  for (const p of q) { try { await post(p); } catch(_){ left.push(p); } }
+  try { localStorage.setItem('ci_pending', JSON.stringify(left)); } catch(_){}
+  paintBanner(left.length);
+}
+paintBanner(getPending().length);
+if (getPending().length && navigator.onLine) retryPending();
+window.addEventListener('online', retryPending);
+</script>
+</body>
+</html>
